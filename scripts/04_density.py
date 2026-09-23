@@ -18,7 +18,7 @@ Communes: the INSEE file uses a single recent commune geography (later than the 
 
 Outputs
   data/processed/coordination_density_departements.csv        one row per year × département
-  data/processed/coordination_density_departements_wide.csv   2002–2022 comparison, metropolitan départements
+  data/processed/coordination_density_departements_wide.csv   2002–2022 comparison (ΔHHI, ΔCENP), metropolitan départements
   data/processed/coordination_density_communes_corrected.csv  one row per year × commune (+ one file per year)
 
 Usage: python scripts/04_density.py [--force] [--level departements|communes]
@@ -137,14 +137,17 @@ def departements():
     show(name_diff[["year", "department_code", "department_name", "insee_name"]])
 
     # Matched 2002–2022 comparison, one row per metropolitan département.
-    # delta_log_density = log change in population (same surface in both years).
-    wide = main.pivot(index="department_code", columns="year", values=["CENP", "log_density", "density", "population"])
+    # delta_HHI is the main cross-year comparison (HHI does not depend on the number of candidates K); delta_CENP is
+    # kept as a supplementary result. delta_log_density = log change in population (same surface in both years).
+    wide = main.pivot(index="department_code", columns="year",
+                      values=["HHI", "CENP", "log_density", "density", "population"])
     wide.columns = [f"{var}_{year}" for var, year in wide.columns]
     wide = wide.reset_index()
     first = main.drop_duplicates("department_code").set_index("department_code")
     wide.insert(1, "department_name", wide["department_code"].map(first["department_name"]))
     wide["surface_km2"] = wide["department_code"].map(first["surface_km2"])
     wide["delta_CENP"] = wide["CENP_2022"] - wide["CENP_2002"]
+    wide["delta_HHI"] = wide["HHI_2022"] - wide["HHI_2002"]
     wide["delta_log_density"] = wide["log_density_2022"] - wide["log_density_2002"]
     report("wide dataset: 96 départements, no missing value", len(wide) == 96 and wide.notna().all().all())
     return merged.drop(columns="insee_name"), wide
@@ -222,7 +225,7 @@ def communes():
                                     possible_boundary_change=("possible_boundary_change", "sum"),
                                     main_sample=("main_sample", "sum")))
     show(merged.loc[merged["commune_code"].isin(PLM), ["year", "commune_code", "commune_name", "population",
-                                                        "surface_km2", "density", "CENP", "main_sample"]])
+                                                        "surface_km2", "density", "HHI", "CENP", "main_sample"]])
     return merged.sort_values(["year", "commune_code"])
 
 

@@ -86,11 +86,12 @@ def commune_scatter(df, y, ax, title, ylabel, x="log_density", xlabel="log(popul
     ax.legend(fontsize=8)
 
 
-def pooled_interaction(d, cov="cluster"):
-    """CENP ~ log_density × C(year) on stacked cross-sections; département-clustered or HC1 SE."""
+def pooled_interaction(d, cov="cluster", y="CENP"):
+    """y ~ log_density × C(year) on stacked cross-sections; département-clustered or HC1 SE."""
+    d = d.dropna(subset=[y, "log_density"])
     kwargs = ({"cov_type": "cluster", "cov_kwds": {"groups": d["department_code"]}} if cov == "cluster"
               else {"cov_type": "HC1"})
-    return smf.ols("CENP ~ log_density * C(year)", data=d).fit(**kwargs)
+    return smf.ols(f"{y} ~ log_density * C(year)", data=d).fit(**kwargs)
 
 
 def show_plot(fig):

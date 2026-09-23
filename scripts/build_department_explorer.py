@@ -2,8 +2,9 @@
 
 The page is self-contained: Plotly.js, the département geometry and all values are embedded, so it opens from disk
 and needs no server. Everything shown is computed here from the processed data (nothing is hard-coded):
-CENP by year, ΔCENP, ranks, the descriptive 2022 regression CENP ~ log(density) and its residuals, cliff metrics and,
-if available, the candidates' first-round vote shares.
+HHI (vote concentration) by year and ΔHHI — the main cross-year layer —, CENP by year and ΔCENP (supplementary
+normalised measure), ranks, the descriptive 2022 regression CENP ~ log(density) and its residuals, cliff metrics and,
+if available, the candidates' first-round vote shares and the national HHI.
 
 Inputs
   data/processed/coordination_density_departements.csv   indices + density, one row per year × département (step 4)
@@ -42,8 +43,9 @@ SIMPLIFY_TOLERANCE = 0.002  # degrees (≈ 150–200 m): invisible at page scale
 COORDINATE_DECIMALS = 4
 
 # ---- Colours ----
-# Sequential maps run light (low) -> dark (high): CENP uses rocket_r like notebooks/maps_departements.ipynb,
-# density uses mako_r. Change and residual maps use Spectral_r centred on zero, as in the static figures.
+# Sequential maps run light (low) -> dark (high): HHI and CENP use rocket_r like notebooks/maps_departements.ipynb,
+# density uses mako_r. Change and residual maps use Spectral_r centred on zero, as in the static figures (positive =
+# more concentrated on the dark red side).
 N_COLOR_STOPS = 11
 CENP_PALETTE, DENSITY_PALETTE, DIVERGING_PALETTE = "rocket_r", "mako_r", "Spectral_r"
 CLIFF_CATEGORIES = ["1", "2", "3", "4", "5+"]
@@ -51,7 +53,7 @@ CLIFF_CATEGORIES = ["1", "2", "3", "4", "5+"]
 CLIFF_SPECTRAL_POSITIONS = [0.0, 0.2, 0.65, 0.8, 1.0]
 DENSITY_TICKS = [5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000]
 
-INDICATOR_COLUMNS = ["year", "department_code", "department_name", "CENP", "cliff_location", "cliff_magnitude",
+INDICATOR_COLUMNS = ["year", "department_code", "department_name", "HHI", "CENP", "cliff_location", "cliff_magnitude",
                      "cliff_ratio", "density", "log_density"]
 CANDIDATE_COLUMNS = ["year", "dep_code", "candidate_clean", "votes"]
 
@@ -73,7 +75,7 @@ def require_file(path, what):
 
 # ======================= Data =======================
 def load_department_indicators():
-    """One row per metropolitan département: CENP, cliff metrics and density for each year (columns `<var>_<year>`)."""
+    """One row per metropolitan département: HHI, CENP, cliff metrics and density for each year (`<var>_<year>`)."""
     require_file(DEPARTMENT_DENSITY, "Département indices/density file (run scripts/01–04)")
     long = read_csv(DEPARTMENT_DENSITY)
     require_columns(long, INDICATOR_COLUMNS, DEPARTMENT_DENSITY.name)
@@ -85,7 +87,7 @@ def load_department_indicators():
         if missing:
             warn(f"{year}: {len(missing)} metropolitan départements missing from the data: {missing}")
 
-    values = ["CENP", "cliff_location", "cliff_magnitude", "cliff_ratio", "density", "log_density"]
+    values = ["HHI", "CENP", "cliff_location", "cliff_magnitude", "cliff_ratio", "density", "log_density"]
     dep = long.pivot(index="department_code", columns="year", values=values)
     dep.columns = [f"{var.lower()}_{year}" for var, year in dep.columns]
     names = long.sort_values("year").groupby("department_code")["department_name"].last()
@@ -93,12 +95,16 @@ def load_department_indicators():
 
 
 def add_derived_measures(dep):
-    """ΔCENP, ranks (1 = highest CENP), 2022 descriptive regression CENP ~ log(density), cliff categories."""
+    """ΔHHI, ΔCENP, ranks (1 = most concentrated), 2022 descriptive regression CENP ~ log(density), cliff categories.
+
+    Within one election K is fixed and CENP is increasing in HHI, so the rank is the same with either measure.
+    """
     dep = dep.copy()
     first, last = YEARS[0], YEARS[-1]
+    dep["delta_hhi"] = dep[f"hhi_{last}"] - dep[f"hhi_{first}"]
     dep["delta_cenp"] = dep[f"cenp_{last}"] - dep[f"cenp_{first}"]
     for year in YEARS:
-        dep[f"rank_{year}"] = dep[f"cenp_{year}"].rank(ascending=False, method="min").astype("Int64")
+        dep[f"rank_{year}"] = dep[f"hhi_{year}"].rank(ascending=False, method="min").astype("Int64")
         dep[f"cliff_group_{year}"] = pd.cut(dep[f"cliff_location_{year}"], bins=[0.5, 1.5, 2.5, 3.5, 4.5, np.inf],
                                             labels=CLIFF_CATEGORIES).astype(object)
         dep[f"cliff_location_{year}"] = dep[f"cliff_location_{year}"].astype("Int64")
@@ -116,28 +122,32 @@ def add_derived_measures(dep):
 
 
 def load_candidate_shares():
-    """{code: {year: [{name, share}], sorted by share}}, or None if the candidate-level file is unavailable."""
+    """({code: {year: [{name, share}], sorted by share}}, {year: national HHI}), or (None, None) if the
+    candidate-level file is unavailable. The national HHI uses candidate votes summed over the metropolitan
+    départements, i.e. the concentration of the national result (not the mean across départements)."""
     if not DEPARTMENT_RESULTS.exists():
         warn(f"candidate-level results not found at {DEPARTMENT_RESULTS} — the vote-share chart is left out")
-        return None
+        return None, None
     results = read_csv(DEPARTMENT_RESULTS)
     try:
         require_columns(results, CANDIDATE_COLUMNS, DEPARTMENT_RESULTS.name)
     except KeyError as error:
         warn(f"{error} — the vote-share chart is left out")
-        return None
+        return None, None
     if "round" in results:
         results = results[results["round"] == 1]
     results = results[results["dep_code"].isin(METRO_CODES) & results["year"].isin(YEARS)]
     votes = results.groupby(["year", "dep_code", "candidate_clean"], as_index=False)["votes"].sum()
     votes["share"] = votes["votes"] / votes.groupby(["year", "dep_code"])["votes"].transform("sum")
     votes["name"] = votes["candidate_clean"].str.title()
+    national = votes.groupby(["year", "candidate_clean"])["votes"].sum()
+    national_hhi = ((national / national.groupby(level="year").transform("sum")) ** 2).groupby(level="year").sum()
 
     shares = {}
     for (year, code), group in votes.sort_values("share", ascending=False).groupby(["year", "dep_code"], sort=False):
         shares.setdefault(code, {})[str(year)] = [{"name": n, "share": round(float(s), 5)}
                                                   for n, s in zip(group["name"], group["share"])]
-    return shares
+    return shares, {str(year): float(v) for year, v in national_hhi.items()}
 
 
 def load_geometry(codes):
@@ -246,15 +256,29 @@ def categorical_metric(key, label, field, legend, short, observed):
 
 def build_metrics(dep, regression):
     first, last = YEARS[0], YEARS[-1]
+    hhi = pd.concat([dep[f"hhi_{y}"] for y in YEARS]).dropna()
     cenp = pd.concat([dep[f"cenp_{y}"] for y in YEARS]).dropna()
     observed_cliff = set(pd.concat([dep[f"cliff_group_{y}"] for y in YEARS]).dropna())
 
-    metrics = [continuous_metric(f"cenp_{y}", f"CENP — {y}", f"cenp_{y}", CENP_PALETTE, cenp.min(), cenp.max(),
-                                 f"CENP, {y} · same colour scale for {first} and {last}", f"CENP {y}", "fixed")
-               for y in YEARS]
+    # Main cross-year layer first (it is the default map)
+    delta_hhi = dep["delta_hhi"].dropna()
+    metrics = [continuous_metric("delta_hhi", "Change in HHI", "delta_hhi", DIVERGING_PALETTE, delta_hhi.min(),
+                                 delta_hhi.max(), f"Change in vote concentration (HHI), {last} − {first}",
+                                 "Change in HHI", "signed", diverging=True,
+                                 ends=[f"Less concentrated in {last}", f"More concentrated in {last}"])]
+    metrics += [continuous_metric(f"hhi_{y}", f"HHI — {y}", f"hhi_{y}", CENP_PALETTE, hhi.min(), hhi.max(),
+                                  f"Vote concentration (HHI), {y} · higher = more concentrated · same scale for "
+                                  f"{first} and {last}", f"HHI {y}", "fixed")
+                for y in YEARS]
+    metrics += [continuous_metric(f"cenp_{y}", f"CENP — {y}", f"cenp_{y}", CENP_PALETTE, cenp.min(), cenp.max(),
+                                  f"CENP, {y} · supplementary normalised measure, depends on the number of candidates",
+                                  f"CENP {y}", "fixed")
+                for y in YEARS]
     delta = dep["delta_cenp"].dropna()
+    # key "delta" kept so that existing links (#metric=delta) still open the CENP change map
     metrics.append(continuous_metric("delta", "Change in CENP", "delta_cenp", DIVERGING_PALETTE, delta.min(), delta.max(),
-                                     f"Change in CENP, {last} − {first}", "Change in CENP", "signed",
+                                     f"Change in CENP, {last} − {first} · supplementary: CENP depends on the number "
+                                     f"of candidates, so ΔHHI is the main comparison", "Change in CENP", "signed",
                                      diverging=True, ends=[f"Lower in {last}", f"Higher in {last}"]))
     log_density = dep[f"log_density_{last}"].dropna()
     lo, hi = log_density.min(), log_density.max()
@@ -269,8 +293,8 @@ def build_metrics(dep, regression):
                                      residual.min(), residual.max(),
                                      f"Residual CENP, {last}: observed − predicted from log density (descriptive)",
                                      f"Residual CENP {last}", "signed", diverging=True,
-                                     ends=["Less coordinated than predicted by density",
-                                           "More coordinated than predicted by density"]))
+                                     ends=["Less concentrated than predicted by density",
+                                           "More concentrated than predicted by density"]))
     for y in YEARS:
         metrics.append(categorical_metric(f"cliff_{y}", f"Cliff location — {y}", f"cliff_group_{y}",
                                           f"Cliff location, {y} · rank after which the largest vote-share drop occurs",
@@ -278,11 +302,16 @@ def build_metrics(dep, regression):
     return metrics
 
 
-def build_summary(dep, regression):
+def build_summary(dep, regression, national_hhi):
     first, last = YEARS[0], YEARS[-1]
+    hhi = pd.concat([dep[f"hhi_{y}"] for y in YEARS]).dropna()
     cenp = pd.concat([dep[f"cenp_{y}"] for y in YEARS]).dropna()
     delta = dep["delta_cenp"].dropna()
+    delta_hhi = dep["delta_hhi"].dropna()
     return {"n_departments": int(len(dep)), "n_delta": int(len(delta)), "n_increase": int((delta > 0).sum()),
+            "n_delta_hhi": int(len(delta_hhi)), "n_increase_hhi": int((delta_hhi > 0).sum()),
+            "mean_hhi": {str(y): float(dep[f"hhi_{y}"].mean()) for y in YEARS}, "national_hhi": national_hhi,
+            "hhi_min": float(hhi.min()), "hhi_max": float(hhi.max()),
             "mean_cenp": {str(y): float(dep[f"cenp_{y}"].mean()) for y in YEARS},
             "cenp_min": float(cenp.min()), "cenp_max": float(cenp.max()),
             "regression": {k: (float(v) if isinstance(v, (float, np.floating)) else v) for k, v in regression.items()},
@@ -300,21 +329,21 @@ def build_page(payload):
 def main():
     dep = load_department_indicators()
     dep, regression = add_derived_measures(dep)
-    candidates = load_candidate_shares()
+    candidates, national_hhi = load_candidate_shares()
     if candidates is not None:
         no_candidates = sorted(set(dep["code"]) - set(candidates))
         if no_candidates:
             warn(f"no candidate results for: {no_candidates}")
     geojson = load_geometry(dep["code"])
 
-    columns = ["code", "name", "delta_cenp", f"fitted_{YEARS[-1]}", f"residual_{YEARS[-1]}"]
+    columns = ["code", "name", "delta_hhi", "delta_cenp", f"fitted_{YEARS[-1]}", f"residual_{YEARS[-1]}"]
     for year in YEARS:
-        columns += [f"cenp_{year}", f"rank_{year}", f"density_{year}", f"log_density_{year}",
+        columns += [f"hhi_{year}", f"cenp_{year}", f"rank_{year}", f"density_{year}", f"log_density_{year}",
                     f"cliff_location_{year}", f"cliff_group_{year}", f"cliff_magnitude_{year}", f"cliff_ratio_{year}"]
     records = json.loads(dep[columns].sort_values("name").to_json(orient="records", double_precision=6))
 
     payload = {"years": YEARS, "departments": records, "candidates": candidates, "geojson": geojson,
-               "metrics": build_metrics(dep, regression), "summary": build_summary(dep, regression)}
+               "metrics": build_metrics(dep, regression), "summary": build_summary(dep, regression, national_hhi)}
     OUTPUT_HTML.parent.mkdir(exist_ok=True)
     OUTPUT_HTML.write_text(build_page(payload), encoding="utf-8")
     size_mb = OUTPUT_HTML.stat().st_size / 1e6
@@ -327,8 +356,8 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Electoral coordination in France</title>
-<meta name="description" content="Interactive map of first-round electoral coordination (CENP) by département, French presidential elections 2002 and 2022.">
+<title>Vote concentration in France</title>
+<meta name="description" content="Interactive map of first-round vote concentration (HHI, with CENP as a supplementary measure) by département, French presidential elections 2002 and 2022.">
 <style>
   :root {
     --ink: #1a1a1a; --muted: #5f6368; --faint: #8a8f94; --rule: #e6e6e3; --soft: #f5f5f2;
@@ -427,9 +456,10 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
 <div class="page">
   <header>
     <h1>Geography of electoral coordination in France</h1>
-    <p class="subtitle">Explore how first-round electoral coordination differed across départements in 2002 and 2022.</p>
-    <p class="note">CENP measures the concentration of candidate vote shares. Higher values indicate greater coordination
-      around fewer candidates.</p>
+    <p class="subtitle">Explore how concentrated the first-round vote was across départements in 2002 and 2022.</p>
+    <p class="note">HHI measures vote concentration: higher values mean the vote was more concentrated on fewer
+      candidates. It is the main measure for comparing the two elections. CENP is a supplementary normalised measure.
+      Neither is, on its own, evidence of strategic voting.</p>
   </header>
 
   <div class="layout">
@@ -451,9 +481,12 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
   <footer>
     <p>Sources: Ministère de l'Intérieur (first-round results of the 2002 and 2022 presidential elections), INSEE
       (population, surface). 96 metropolitan départements; overseas départements are not shown.</p>
-    <p>CENP = (K − ENP) / (K − 1), where ENP is the effective number of candidates and K the number of candidates
-      nationally (16 in 2002, 12 in 2022). All relationships with density are descriptive associations, not causal
-      effects.</p>
+    <p>HHI = Σ (vote share)², from 1/K (votes spread evenly over the K candidates) to 1 (all votes on one candidate);
+      an unchanged vote gives an unchanged HHI whatever the number of candidates. ENP = 1 / HHI is the effective number
+      of candidates. CENP = (K − ENP) / (K − 1), with K the number of candidates nationally (16 in 2002, 12 in 2022),
+      depends directly on K, so HHI is used to compare the two elections. Changes in concentration can reflect candidate
+      supply, preferences, campaigns or strategic voting. All relationships with density are descriptive associations,
+      not causal effects.</p>
     <p>Code and method: <a href="__REPOSITORY_URL__">__REPOSITORY_URL__</a></p>
   </footer>
 </div>
@@ -525,8 +558,9 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
   function hoverText(d, m) {
     return "<b>" + esc(d.name) + "</b> <span style='color:#8a8f94'>" + d.code + "</span><br>" +
       esc(m.short) + ": <b>" + formatMetric(m, d) + "</b><br>" +
-      "<span style='color:#5f6368'>CENP " + fixed(d["cenp_" + FIRST]) + " (" + FIRST + ") → " +
-      fixed(d["cenp_" + LAST]) + " (" + LAST + ")</span>";
+      "<span style='color:#5f6368'>Vote concentration (HHI) " + fixed(d["hhi_" + FIRST]) + " (" + FIRST + ") → " +
+      fixed(d["hhi_" + LAST]) + " (" + LAST + ")<br>CENP (supplementary) " + fixed(d["cenp_" + FIRST]) + " → " +
+      fixed(d["cenp_" + LAST]) + "</span>";
   }
 
   function mapTraces() {
@@ -588,34 +622,43 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
 
   function summaryHtml() {
     const r = S.regression;
-    const direction = r.slope > 0 ? "higher" : "lower";
+    const direction = r.slope > 0 ? "more" : "less";
     return "<div class='panel-head'><div><div class='eyebrow'>Metropolitan France · " + S.n_departments +
       " départements</div><h2>Overview</h2></div></div>" +
-      "<section class='block'><h3>Coordination (CENP)</h3><div class='stats'>" +
+      "<section class='block'><h3>Vote concentration (HHI)</h3><div class='stats'>" +
+      stat("Mean " + FIRST, fixed(S.mean_hhi[FIRST])) + stat("Mean " + LAST, fixed(S.mean_hhi[LAST])) +
+      stat("Higher in " + LAST, S.n_increase_hhi + "<span class='small'> of " + S.n_delta_hhi + "</span>") + "</div>" +
+      "<p class='small'>Means are unweighted averages across départements (the typical département). " +
+      (S.national_hhi ? "National HHI, from votes summed over the metropolitan départements: " +
+        fixed(S.national_hhi[FIRST]) + " in " + FIRST + ", " + fixed(S.national_hhi[LAST]) + " in " + LAST + ". " : "") +
+      "Higher = more concentrated.</p></section>" +
+      "<section class='block'><h3>CENP (supplementary)</h3><div class='stats'>" +
       stat("Mean " + FIRST, fixed(S.mean_cenp[FIRST])) + stat("Mean " + LAST, fixed(S.mean_cenp[LAST])) +
       stat("Higher in " + LAST, S.n_increase + "<span class='small'> of " + S.n_delta + "</span>") + "</div>" +
-      "<p class='small'>Means are unweighted averages across départements.</p></section>" +
+      "<p class='small'>Normalised by the number of candidates (16 in " + FIRST + ", 12 in " + LAST +
+      "), so it is not the main basis for comparing the two elections.</p></section>" +
       "<section class='block'><h3>Density relationship, " + r.year + "</h3><p class='small' style='margin:0'>" +
-      "Across départements, CENP was on average " + direction + " where population density was higher " +
+      "Across départements, the first-round vote was on average " + direction +
+      " concentrated where population density was higher " +
       "(descriptive regression of CENP on log density, R² = " + r.r2.toFixed(2) + "). This is an association, " +
       "not a causal effect.</p></section>" +
       "<p class='prompt'>Select a département to explore its results.</p>";
   }
 
-  function dumbbell(d) {
-    const a = d["cenp_" + FIRST], b = d["cenp_" + LAST];
+  function dumbbell(d, key = "hhi", measure = "HHI") {
+    const a = d[key + "_" + FIRST], b = d[key + "_" + LAST];
     if (!isNum(a) || !isNum(b)) return "";
-    const W = 320, pad = 14, y = 18;
-    const x = v => pad + (W - 2 * pad) * (v - S.cenp_min) / (S.cenp_max - S.cenp_min);
+    const W = 320, pad = 14, y = 18, lo = S[key + "_min"], hi = S[key + "_max"], means = S["mean_" + key];
+    const x = v => pad + (W - 2 * pad) * (v - lo) / (hi - lo);
     const meanTick = v => "<line x1='" + x(v) + "' x2='" + x(v) + "' y1='" + (y - 9) + "' y2='" + (y + 9) +
       "' stroke='#b5b5b0' stroke-width='1.5'/>";
     const left = a <= b;
     const label = (v, text, anchorLeft) => "<text x='" + (x(v) + (anchorLeft ? -8 : 8)) + "' y='" + (y + 22) +
       "' font-size='11' fill='#5f6368' text-anchor='" + (anchorLeft ? "end" : "start") + "'>" + text + "</text>";
-    return "<svg class='dumbbell' viewBox='0 0 " + W + " 46' role='img' aria-label='CENP " + fixed(a) + " in " + FIRST +
+    return "<svg class='dumbbell' viewBox='0 0 " + W + " 46' role='img' aria-label='" + measure + " " + fixed(a) + " in " + FIRST +
       " and " + fixed(b) + " in " + LAST + "'>" +
       "<line x1='" + pad + "' x2='" + (W - pad) + "' y1='" + y + "' y2='" + y + "' stroke='#ecece8' stroke-width='6' stroke-linecap='round'/>" +
-      meanTick(S.mean_cenp[FIRST]) + meanTick(S.mean_cenp[LAST]) +
+      meanTick(means[FIRST]) + meanTick(means[LAST]) +
       "<line x1='" + x(a) + "' x2='" + x(b) + "' y1='" + y + "' y2='" + y + "' stroke='#1a1a1a' stroke-width='2'/>" +
       "<circle cx='" + x(a) + "' cy='" + y + "' r='5.5' fill='#fff' stroke='#1a1a1a' stroke-width='2'/>" +
       "<circle cx='" + x(b) + "' cy='" + y + "' r='5.5' fill='#1a1a1a'/>" +
@@ -650,7 +693,7 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
   function departmentHtml(d) {
     const r = S.regression;
     const residual = d["residual_" + LAST];
-    const verdict = !isNum(residual) ? "" : residual > 0 ? "More coordinated than predicted by density" : "Less coordinated than predicted by density";
+    const verdict = !isNum(residual) ? "" : residual > 0 ? "More concentrated than predicted by density" : "Less concentrated than predicted by density";
     const rank = y => isNum(d["rank_" + y]) ? d["rank_" + y] + " of " + S.n_departments : "—";
     const cliffRow = y => "<tr><th>" + y + "</th><td>" + (isNum(d["cliff_location_" + y]) ? d["cliff_location_" + y] : "—") +
       "</td><td>" + (isNum(d["cliff_magnitude_" + y]) ? (100 * d["cliff_magnitude_" + y]).toFixed(1) + " pts" : "—") +
@@ -658,11 +701,17 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
     return "<div class='panel-head'><div><div class='eyebrow'>Département " + esc(d.code) + "</div><h2>" + esc(d.name) +
       "</h2></div><button class='clear' data-action='clear'>Clear selection</button></div>" +
 
-      "<section class='block'><h3>Coordination (CENP)</h3><div class='stats'>" +
+      "<section class='block'><h3>Vote concentration (HHI)</h3><div class='stats'>" +
+      stat(FIRST, fixed(d["hhi_" + FIRST])) + stat(LAST, fixed(d["hhi_" + LAST])) +
+      stat("Change", signed(d.delta_hhi)) + "</div>" + dumbbell(d, "hhi", "HHI") +
+      "<p class='small'>Higher = more concentrated. Rank " + rank(FIRST) + " in " + FIRST + " · " + rank(LAST) + " in " +
+      LAST + " (1 = most concentrated; the same ranking as with CENP within each election).</p></section>" +
+
+      "<section class='block'><h3>CENP (supplementary)</h3><div class='stats'>" +
       stat(FIRST, fixed(d["cenp_" + FIRST])) + stat(LAST, fixed(d["cenp_" + LAST])) +
-      stat("Change", signed(d.delta_cenp)) + "</div>" + dumbbell(d) +
-      "<p class='small'>Rank " + rank(FIRST) + " in " + FIRST + " · " + rank(LAST) + " in " + LAST +
-      " (1 = highest CENP, i.e. most coordinated).</p></section>" +
+      stat("Change", signed(d.delta_cenp)) + "</div>" + dumbbell(d, "cenp", "CENP") +
+      "<p class='small'>Normalised measure that depends on the number of candidates (16 in " + FIRST + ", 12 in " + LAST +
+      "); the change in HHI is the main cross-election comparison.</p></section>" +
 
       "<section class='block'><h3>Population density</h3><div class='stats two'>" +
       stat(FIRST, densityFmt(d["density_" + FIRST]), "small") + stat(LAST, densityFmt(d["density_" + LAST]), "small") +

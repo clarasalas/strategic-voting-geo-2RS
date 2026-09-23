@@ -1,8 +1,9 @@
-"""Step 3 — coordination indices (ENP, CENP, cliff magnitude / location / ratio) by département and by commune.
+"""Step 3 — concentration indices (HHI, corrected HHI, ENP, CENP, cliff magnitude / location / ratio) by département
+and by commune.
 
 Shares are recomputed from the counts, δ_j = votes_j / Σ_k votes_k, with K = number of candidates nationally
-(16 in 2002, 12 in 2022). Definitions: svgeo/indices.py. CENP describes the observed result only (there is no
-sincere counterfactual here), so it is not a coordination *gain*.
+(16 in 2002, 12 in 2022). Definitions: svgeo/indices.py. HHI and CENP describe the observed result only (there is no
+sincere counterfactual here), so they are not a coordination *gain* and do not identify strategic voting.
 
 Inputs   data/processed/presidential_{departments,communes}_2002_2022.csv (steps 1 and 2)
 Outputs  data/processed/coordination_indices_departements.csv   one row per year × département
@@ -19,7 +20,9 @@ from svgeo.config import (COMMUNE_INDICES, COMMUNE_RESULTS, DEPARTMENT_INDICES, 
 from svgeo.indices import compute_indices
 from svgeo.utils import read_csv, report, show
 
-INDEX_COLUMNS = ["ENP", "CENP", "cliff_magnitude", "cliff_location", "cliff_ratio"]
+INDEX_COLUMNS = ["HHI", "HHI_corrected", "ENP", "CENP", "cliff_magnitude", "cliff_location", "cliff_ratio"]
+# May be missing for a unit with votes: corrected HHI when n <= 1, cliff ratio when all gaps are 0
+OPTIONAL_INDEX_COLUMNS = ["HHI_corrected", "cliff_ratio"]
 
 
 def check_k(results):
@@ -33,9 +36,19 @@ def validate(indices, unit):
     report(f"no duplicated year × {unit} rows", not dup.any(), indices[dup])
     ok = indices["CENP"].notna()
     d = indices[ok]
-    report(f"indices computed for every {unit} with votes ({(~ok).sum()} without)",
-           not d[INDEX_COLUMNS[:-1]].isna().any().any())
+    required = [c for c in INDEX_COLUMNS if c not in OPTIONAL_INDEX_COLUMNS]
+    report(f"indices computed for every {unit} with votes ({(~ok).sum()} without)", not d[required].isna().any().any())
     report("K as expected", d["K"].eq(d["year"].map(EXPECTED_K)).all())
+    report("HHI within [1/K, 1]", (d["HHI"].ge(1 / d["K"] - 1e-12) & d["HHI"].le(1 + 1e-12)).all(),
+           d.loc[~d["HHI"].between(0, 1), ["year", unit, "HHI"]])
+    report("ENP = 1 / HHI", np.allclose(d["ENP"], 1 / d["HHI"]))
+    small = d["expressed"] <= 1
+    hc = d.loc[~small, "HHI_corrected"]
+    report(f"corrected HHI within [0, 1] where expressed > 1, missing exactly where expressed <= 1 ({small.sum()} units)",
+           hc.notna().all() and hc.between(-1e-12, 1 + 1e-12).all() and d.loc[small, "HHI_corrected"].isna().all(),
+           d.loc[~small & ~d["HHI_corrected"].between(0, 1), ["year", unit, "expressed", "HHI_corrected"]])
+    report("corrected HHI <= HHI (finite-electorate noise only raises observed concentration)",
+           (hc <= d.loc[~small, "HHI"] + 1e-12).all())
     report("CENP within [0, 1]", d["CENP"].between(0, 1).all(), d.loc[~d["CENP"].between(0, 1), ["year", unit, "CENP"]])
     report("ENP within [1, K]", (d["ENP"].ge(1 - 1e-12) & d["ENP"].le(d["K"] + 1e-12)).all())
     # d* >= every other gap >= their mean, so the ratio is >= 0.5; it is 1 only if all other gaps are 0
