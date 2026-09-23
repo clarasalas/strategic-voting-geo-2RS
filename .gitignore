@@ -1,5 +1,6 @@
 # Data is not versioned (see README)
 data/
+archive/
 
 # Python
 __pycache__/
