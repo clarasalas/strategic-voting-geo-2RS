@@ -1,0 +1,11 @@
+pandas>=2.0
+numpy
+scipy
+statsmodels
+matplotlib
+requests
+beautifulsoup4
+openpyxl
+curl_cffi   # optional: only used if the election site refuses plain requests (403)
+jupyter
+pytest

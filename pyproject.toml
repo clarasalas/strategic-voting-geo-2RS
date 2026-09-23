@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "svgeo"
+version = "0.1.0"
+description = "Geography of strategic voting: coordination and population density in the 2002 and 2022 French presidential first rounds"
+requires-python = ">=3.10"
+dependencies = [
+    "pandas>=2.0",
+    "numpy",
+    "scipy",
+    "statsmodels",
+    "matplotlib",
+    "requests",
+    "beautifulsoup4",
+    "openpyxl",
+]
+
+[project.optional-dependencies]
+scraping = ["curl_cffi"]
+dev = ["pytest", "jupyter"]
+
+[tool.setuptools]
+packages = ["svgeo"]
