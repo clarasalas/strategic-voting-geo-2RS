@@ -18,7 +18,7 @@ and how that concentration relates to population density.
   </a>
 </p>
 
-<p align="center"><sub>
+<p align="center">
 Click the map to explore every département: vote concentration (HHI) and CENP in 2002 and 2022, population density,
 the position of each département relative to the density relationship, and its first-round vote shares.
 </sub></p>
@@ -99,7 +99,7 @@ geographic concentration of the vote is not the same as individual strategic coo
   <img src="figures/figure_3_residual_hhi_2022.png" width="49%" alt="Residual HHI relative to the 2022 density relationship">
 </p>
 
-<p align="center"><sub>
+<p align="center">
 Left: HHI within each election, each map with its own colour scale (the change is the map at the top). Right:
 residual HHI in 2022 after a descriptive regression on log density. The change in CENP is kept as a supplementary
 figure, <code>figures/figure_s1_delta_cenp_departements.png</code>.
@@ -262,5 +262,5 @@ is set aside, HHI is related to neither turnout nor density. Details in `noteboo
 
 ---
 
-<sub>Clara Salas. Master's thesis project, ENS-PSL / Centre Borelli. Complementary analysis to the agent-based model
-[strategic-voting-abm-2RS](https://github.com/clarasalas/strategic-voting-abm-2RS).</sub>
+Clara Salas. Master's thesis project, ENS-PSL / Centre Borelli. Complementary analysis to the agent-based model
+[strategic-voting-abm-2RS](https://github.com/clarasalas/strategic-voting-abm-2RS).
