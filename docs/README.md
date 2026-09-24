@@ -15,7 +15,7 @@ The file is standalone (Plotly.js, geometry and data embedded), so it can also b
 3. Under **Build and deployment**, set **Source** to **Deploy from a branch**.
 4. Select the branch **`main`** and the folder **`/docs`**, then **Save**.
 5. After a minute or two the page is live at `https://<user>.github.io/<repository>/`
-   (here: `https://clarasalas.github.io/strategic-voting-geo-2RS/`). Add this link to the root `README.md`.
+   (here: `https://clarasalas.github.io/strategic-voting-geo-2RS/`).
 
 ## Update
 
