@@ -3,7 +3,7 @@
 The page is self-contained: Plotly.js, the département geometry and all values are embedded, so it opens from disk
 and needs no server. Everything shown is computed here from the processed data (nothing is hard-coded):
 HHI (vote concentration) by year and ΔHHI — the main cross-year layer —, CENP by year and ΔCENP (supplementary
-normalised measure), ranks, the descriptive 2022 regression CENP ~ log(density) and its residuals, cliff metrics and,
+normalised measure), ranks, the descriptive 2022 regression HHI ~ log(density) and its residuals, cliff metrics and,
 if available, the candidates' first-round vote shares and the national HHI.
 
 Inputs
@@ -95,7 +95,7 @@ def load_department_indicators():
 
 
 def add_derived_measures(dep):
-    """ΔHHI, ΔCENP, ranks (1 = most concentrated), 2022 descriptive regression CENP ~ log(density), cliff categories.
+    """ΔHHI, ΔCENP, ranks (1 = most concentrated), 2022 descriptive regression HHI ~ log(density), cliff categories.
 
     Within one election K is fixed and CENP is increasing in HHI, so the rank is the same with either measure.
     """
@@ -109,14 +109,14 @@ def add_derived_measures(dep):
                                             labels=CLIFF_CATEGORIES).astype(object)
         dep[f"cliff_location_{year}"] = dep[f"cliff_location_{year}"].astype("Int64")
 
-    sample = dep.dropna(subset=[f"cenp_{last}", f"log_density_{last}"])
-    fit = smf.ols(f"cenp_{last} ~ log_density_{last}", data=sample).fit()
+    sample = dep.dropna(subset=[f"hhi_{last}", f"log_density_{last}"])
+    fit = smf.ols(f"hhi_{last} ~ log_density_{last}", data=sample).fit()
     # Fitted values from the coefficients, so départements without a density keep a missing value (not dropped)
     dep[f"fitted_{last}"] = fit.params["Intercept"] + fit.params[f"log_density_{last}"] * dep[f"log_density_{last}"]
-    dep[f"residual_{last}"] = dep[f"cenp_{last}"] - dep[f"fitted_{last}"]
+    dep[f"residual_{last}"] = dep[f"hhi_{last}"] - dep[f"fitted_{last}"]
     regression = {"year": last, "n": int(fit.nobs), "intercept": fit.params["Intercept"],
                   "slope": fit.params[f"log_density_{last}"], "r2": fit.rsquared}
-    print(f"{last} regression CENP ~ log(density): slope {regression['slope']:.4f}, R² {regression['r2']:.3f}, "
+    print(f"{last} regression HHI ~ log(density): slope {regression['slope']:.4f}, R² {regression['r2']:.3f}, "
           f"n = {regression['n']}")
     return dep, regression
 
@@ -289,10 +289,10 @@ def build_metrics(dep, regression):
                                      f"Density {last}", "density", ticks=density_ticks,
                                      display_field=f"density_{last}"))
     residual = dep[f"residual_{last}"].dropna()
-    metrics.append(continuous_metric("residual", f"Residual CENP — {last}", f"residual_{last}", DIVERGING_PALETTE,
+    metrics.append(continuous_metric("residual", f"Residual HHI — {last}", f"residual_{last}", DIVERGING_PALETTE,
                                      residual.min(), residual.max(),
-                                     f"Residual CENP, {last}: observed − predicted from log density (descriptive)",
-                                     f"Residual CENP {last}", "signed", diverging=True,
+                                     f"Residual HHI, {last}: observed − predicted from log density (descriptive)",
+                                     f"Residual HHI {last}", "signed", diverging=True,
                                      ends=["Less concentrated than predicted by density",
                                            "More concentrated than predicted by density"]))
     for y in YEARS:
@@ -640,7 +640,7 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
       "<section class='block'><h3>Density relationship, " + r.year + "</h3><p class='small' style='margin:0'>" +
       "Across départements, the first-round vote was on average " + direction +
       " concentrated where population density was higher " +
-      "(descriptive regression of CENP on log density, R² = " + r.r2.toFixed(2) + "). This is an association, " +
+      "(descriptive regression of HHI on log density, R² = " + r.r2.toFixed(2) + "). This is an association, " +
       "not a causal effect.</p></section>" +
       "<p class='prompt'>Select a département to explore its results.</p>";
   }
@@ -718,9 +718,9 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
       "</div><p class='small'>Inhabitants per km².</p></section>" +
 
       "<section class='block'><h3>Relative to the " + LAST + " density relationship</h3><div class='stats'>" +
-      stat("Predicted", fixed(d["fitted_" + LAST])) + stat("Actual", fixed(d["cenp_" + LAST])) +
+      stat("Predicted", fixed(d["fitted_" + LAST])) + stat("Actual", fixed(d["hhi_" + LAST])) +
       stat("Residual", signed(residual)) + "</div>" + (verdict ? "<div class='verdict'>" + verdict + "</div>" : "") +
-      "<p class='small'>Prediction from a descriptive regression of CENP on log density across " + r.n +
+      "<p class='small'>Prediction from a descriptive regression of HHI on log density across " + r.n +
       " départements (R² = " + r.r2.toFixed(2) + "). It describes an association, not a causal effect.</p></section>" +
 
       "<section class='block'><h3>Cliff metrics</h3><table class='mini'><thead><tr><th></th><th>Location</th>" +
