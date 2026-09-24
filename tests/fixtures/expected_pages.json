@@ -1,0 +1,292 @@
+[
+ {
+  "kind": "departement",
+  "year": 2002,
+  "url": "https://www.archives-resultats-elections.interieur.gouv.fr/resultats/presidentielle_2002/082/001/8201.php",
+  "dep_code": "01",
+  "dep_name": "Ain",
+  "turnout": {
+   "inscrits": 338220,
+   "votants": 249218,
+   "exprimes": 240652,
+   "blancs_nuls": 8566
+  },
+  "votes": {
+   "M. JEAN-MARIE LE PEN": 52617,
+   "M. JACQUES CHIRAC": 41348,
+   "M. LIONEL JOSPIN": 30418,
+   "M. FRANCOIS BAYROU": 18614,
+   "M. JEAN-PIERRE CHEVENEMENT": 14665,
+   "M. ALAIN MADELIN": 12580,
+   "M. NOEL MAMERE": 12339,
+   "Mme ARLETTE LAGUILLER": 11562,
+   "M. JEAN SAINT-JOSSE": 9718,
+   "M. OLIVIER BESANCENOT": 9404,
+   "M. BRUNO MEGRET": 8425,
+   "Mme CORINNE LEPAGE": 5258,
+   "M. ROBERT HUE": 5134,
+   "Mme CHRISTIANE TAUBIRA": 4527,
+   "Mme CHRISTINE BOUTIN": 2966,
+   "M. DANIEL GLUCKSTEIN": 1077
+  }
+ },
+ {
+  "kind": "departement",
+  "year": 2002,
+  "url": "https://www.archives-resultats-elections.interieur.gouv.fr/resultats/presidentielle_2002/094/02A/942A.php",
+  "dep_code": "2A",
+  "dep_name": "Corse-du-Sud",
+  "turnout": {
+   "inscrits": 86526,
+   "votants": 51450,
+   "exprimes": 50261,
+   "blancs_nuls": 1189
+  },
+  "votes": {
+   "M. JACQUES CHIRAC": 13899,
+   "M. JEAN-MARIE LE PEN": 8749,
+   "M. LIONEL JOSPIN": 7539,
+   "M. JEAN SAINT-JOSSE": 3885,
+   "M. JEAN-PIERRE CHEVENEMENT": 3400,
+   "M. ROBERT HUE": 2360,
+   "M. FRANCOIS BAYROU": 1831,
+   "Mme ARLETTE LAGUILLER": 1666,
+   "M. NOEL MAMERE": 1630,
+   "M. OLIVIER BESANCENOT": 1408,
+   "M. ALAIN MADELIN": 1198,
+   "Mme CHRISTIANE TAUBIRA": 1161,
+   "M. BRUNO MEGRET": 721,
+   "Mme CORINNE LEPAGE": 421,
+   "Mme CHRISTINE BOUTIN": 225,
+   "M. DANIEL GLUCKSTEIN": 168
+  }
+ },
+ {
+  "kind": "commune",
+  "year": 2002,
+  "url": "https://www.archives-resultats-elections.interieur.gouv.fr/resultats/presidentielle_2002/082/001/01001.php",
+  "commune_code": "01001",
+  "commune_name": "L'Abergement-Clémenciat",
+  "turnout": {
+   "registered": 563,
+   "voters": 442,
+   "expressed": 427,
+   "blank_null": 15
+  },
+  "votes": {
+   "M. BRUNO MEGRET": 14,
+   "Mme CORINNE LEPAGE": 9,
+   "M. DANIEL GLUCKSTEIN": 1,
+   "M. FRANCOIS BAYROU": 30,
+   "M. JACQUES CHIRAC": 66,
+   "M. JEAN-MARIE LE PEN": 82,
+   "Mme CHRISTIANE TAUBIRA": 12,
+   "M. JEAN SAINT-JOSSE": 28,
+   "M. NOEL MAMERE": 23,
+   "M. LIONEL JOSPIN": 60,
+   "Mme CHRISTINE BOUTIN": 6,
+   "M. ROBERT HUE": 8,
+   "M. JEAN-PIERRE CHEVENEMENT": 31,
+   "M. ALAIN MADELIN": 19,
+   "Mme ARLETTE LAGUILLER": 19,
+   "M. OLIVIER BESANCENOT": 19
+  }
+ },
+ {
+  "kind": "commune",
+  "year": 2002,
+  "url": "https://www.archives-resultats-elections.interieur.gouv.fr/resultats/presidentielle_2002/094/02A/2A004.php",
+  "commune_code": "2A004",
+  "commune_name": "Ajaccio",
+  "turnout": {
+   "registered": 29418,
+   "voters": 18526,
+   "expressed": 18072,
+   "blank_null": 454
+  },
+  "votes": {
+   "M. BRUNO MEGRET": 249,
+   "Mme CORINNE LEPAGE": 148,
+   "M. DANIEL GLUCKSTEIN": 63,
+   "M. FRANCOIS BAYROU": 649,
+   "M. JACQUES CHIRAC": 4939,
+   "M. JEAN-MARIE LE PEN": 3416,
+   "Mme CHRISTIANE TAUBIRA": 434,
+   "M. JEAN SAINT-JOSSE": 987,
+   "M. NOEL MAMERE": 609,
+   "M. LIONEL JOSPIN": 2842,
+   "Mme CHRISTINE BOUTIN": 81,
+   "M. ROBERT HUE": 716,
+   "M. JEAN-PIERRE CHEVENEMENT": 1437,
+   "M. ALAIN MADELIN": 418,
+   "Mme ARLETTE LAGUILLER": 626,
+   "M. OLIVIER BESANCENOT": 458
+  }
+ },
+ {
+  "kind": "commune",
+  "year": 2002,
+  "url": "https://www.archives-resultats-elections.interieur.gouv.fr/resultats/presidentielle_2002/011/075/1175.php",
+  "commune_code": "75056",
+  "commune_name": "Paris",
+  "turnout": {
+   "registered": 1081420,
+   "voters": 759030,
+   "expressed": 744060,
+   "blank_null": 14970
+  },
+  "votes": {
+   "M. BRUNO MEGRET": 7609,
+   "Mme CORINNE LEPAGE": 18272,
+   "M. DANIEL GLUCKSTEIN": 2494,
+   "M. FRANCOIS BAYROU": 58869,
+   "M. JACQUES CHIRAC": 178658,
+   "M. JEAN-MARIE LE PEN": 69583,
+   "Mme CHRISTIANE TAUBIRA": 28157,
+   "M. JEAN SAINT-JOSSE": 3899,
+   "M. NOEL MAMERE": 54964,
+   "M. LIONEL JOSPIN": 148401,
+   "Mme CHRISTINE BOUTIN": 11115,
+   "M. ROBERT HUE": 16258,
+   "M. JEAN-PIERRE CHEVENEMENT": 49275,
+   "M. ALAIN MADELIN": 48372,
+   "Mme ARLETTE LAGUILLER": 22684,
+   "M. OLIVIER BESANCENOT": 25450
+  }
+ },
+ {
+  "kind": "departement",
+  "year": 2022,
+  "url": "https://www.archives-resultats-elections.interieur.gouv.fr/resultats/presidentielle-2022/084/001/index.php",
+  "dep_code": "01",
+  "dep_name": "Ain",
+  "turnout": {
+   "inscrits": 438109,
+   "votants": 340568,
+   "exprimes": 333024,
+   "blancs_nuls": 7544
+  },
+  "votes": {
+   "M. Emmanuel MACRON": 92206,
+   "Mme Marine LE PEN": 86755,
+   "M. Jean-Luc MÉLENCHON": 57832,
+   "M. Éric ZEMMOUR": 27530,
+   "Mme Valérie PÉCRESSE": 17572,
+   "M. Yannick JADOT": 15843,
+   "M. Jean LASSALLE": 10876,
+   "M. Nicolas DUPONT-AIGNAN": 8998,
+   "M. Fabien ROUSSEL": 5938,
+   "Mme Anne HIDALGO": 5644,
+   "M. Philippe POUTOU": 2172,
+   "Mme Nathalie ARTHAUD": 1658
+  }
+ },
+ {
+  "kind": "departement",
+  "year": 2022,
+  "url": "https://www.archives-resultats-elections.interieur.gouv.fr/resultats/presidentielle-2022/094/02A/index.php",
+  "dep_code": "2A",
+  "dep_name": "Corse-du-Sud",
+  "turnout": {
+   "inscrits": 113918,
+   "votants": 71552,
+   "exprimes": 68861,
+   "blancs_nuls": 2691
+  },
+  "votes": {
+   "Mme Marine LE PEN": 20139,
+   "M. Emmanuel MACRON": 12932,
+   "M. Jean-Luc MÉLENCHON": 9330,
+   "M. Éric ZEMMOUR": 9199,
+   "M. Jean LASSALLE": 6729,
+   "Mme Valérie PÉCRESSE": 3772,
+   "M. Yannick JADOT": 2266,
+   "M. Fabien ROUSSEL": 1850,
+   "M. Nicolas DUPONT-AIGNAN": 1215,
+   "Mme Anne HIDALGO": 624,
+   "M. Philippe POUTOU": 608,
+   "Mme Nathalie ARTHAUD": 197
+  }
+ },
+ {
+  "kind": "commune",
+  "year": 2022,
+  "url": "https://www.archives-resultats-elections.interieur.gouv.fr/resultats/presidentielle-2022/084/001/001001.php",
+  "commune_code": "01001",
+  "commune_name": "L'Abergement-Clémenciat",
+  "turnout": {
+   "registered": 645,
+   "voters": 537,
+   "expressed": 520,
+   "blank_null": 17
+  },
+  "votes": {
+   "M. Emmanuel MACRON": 150,
+   "Mme Marine LE PEN": 149,
+   "M. Jean-Luc MÉLENCHON": 66,
+   "M. Éric ZEMMOUR": 43,
+   "M. Yannick JADOT": 30,
+   "Mme Valérie PÉCRESSE": 26,
+   "M. Nicolas DUPONT-AIGNAN": 21,
+   "M. Jean LASSALLE": 18,
+   "M. Fabien ROUSSEL": 6,
+   "Mme Anne HIDALGO": 5,
+   "Mme Nathalie ARTHAUD": 3,
+   "M. Philippe POUTOU": 3
+  }
+ },
+ {
+  "kind": "commune",
+  "year": 2022,
+  "url": "https://www.archives-resultats-elections.interieur.gouv.fr/resultats/presidentielle-2022/094/02A/02A004.php",
+  "commune_code": "2A004",
+  "commune_name": "Ajaccio",
+  "turnout": {
+   "registered": 36641,
+   "voters": 22591,
+   "expressed": 21982,
+   "blank_null": 609
+  },
+  "votes": {
+   "Mme Marine LE PEN": 6719,
+   "M. Emmanuel MACRON": 4174,
+   "M. Jean-Luc MÉLENCHON": 3284,
+   "M. Éric ZEMMOUR": 2979,
+   "M. Jean LASSALLE": 1671,
+   "Mme Valérie PÉCRESSE": 1003,
+   "M. Yannick JADOT": 719,
+   "M. Fabien ROUSSEL": 558,
+   "M. Nicolas DUPONT-AIGNAN": 377,
+   "Mme Anne HIDALGO": 225,
+   "M. Philippe POUTOU": 203,
+   "Mme Nathalie ARTHAUD": 70
+  }
+ },
+ {
+  "kind": "commune",
+  "year": 2022,
+  "url": "https://www.archives-resultats-elections.interieur.gouv.fr/resultats/presidentielle-2022/011/075/index.php",
+  "commune_code": "75056",
+  "commune_name": "Paris",
+  "turnout": {
+   "registered": 1368025,
+   "voters": 1071357,
+   "expressed": 1055062,
+   "blank_null": 16295
+  },
+  "votes": {
+   "M. Emmanuel MACRON": 372820,
+   "M. Jean-Luc MÉLENCHON": 317372,
+   "M. Éric ZEMMOUR": 86088,
+   "M. Yannick JADOT": 80268,
+   "Mme Valérie PÉCRESSE": 69564,
+   "Mme Marine LE PEN": 58429,
+   "Mme Anne HIDALGO": 22901,
+   "M. Fabien ROUSSEL": 17267,
+   "M. Jean LASSALLE": 12139,
+   "M. Nicolas DUPONT-AIGNAN": 9591,
+   "M. Philippe POUTOU": 5732,
+   "Mme Nathalie ARTHAUD": 2891
+  }
+ }
+]

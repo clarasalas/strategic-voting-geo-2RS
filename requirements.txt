@@ -1,11 +1,3 @@
-pandas>=2.0
-numpy
-scipy
-statsmodels
-matplotlib
-requests
-beautifulsoup4
-openpyxl
-curl_cffi   # optional: only used if the election site refuses plain requests (403)
-jupyter
-pytest
+# Everything: the package with all optional dependencies (maps, scraping, dev).
+# For the exact versions the results were produced with: pip install -r requirements-lock.txt && pip install -e . --no-deps
+-e .[all]

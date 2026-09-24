@@ -115,15 +115,20 @@ The data are not included in the repository, because the commune results alone t
 them from the public sources listed below.
 
 ```bash
-pip install -r requirements.txt geopandas seaborn plotly
-pip install -e .
+pip install -r requirements.txt               # the svgeo package with every optional dependency
 python scripts/01_scrape_departements.py
 python scripts/02_scrape_communes.py          # several hours per year without the HTML cache
 python scripts/03_coordination_indices.py
 python scripts/04_density.py
-pytest
+pytest                                        # add -m "not slow" to skip the pipeline rebuild
 python scripts/build_department_explorer.py   # rebuilds the interactive page, docs/index.html
 ```
+
+The results were produced with Python 3.11 and the exact package versions in `requirements-lock.txt`
+(`pip install -r requirements-lock.txt && pip install -e . --no-deps`). The tests check the index formulas, parse
+saved results pages from both elections, and, when `data/` is present, rebuild the processed files from the scraped
+results and compare them byte for byte. `notebooks/audit_communes.ipynb` also needs the scraped pages
+(`data/raw/html_cache*/`).
 
 The static figures (figures 1–3 and supplementary figure S1) are produced by `notebooks/maps_departements.ipynb`, which
 writes them to `figures/`. The
@@ -158,7 +163,7 @@ notebooks/                   analysis (read the processed CSVs only)
   maps_departements.ipynb    static report maps -> figures/
 docs/                        GitHub Pages site (generated index.html, publishing notes) and the deposit README
 figures/                     static figures (PNG 300 dpi and PDF)
-tests/
+tests/                       unit tests and end-to-end checks (fixtures: saved results pages)
 ```
 
 </details>

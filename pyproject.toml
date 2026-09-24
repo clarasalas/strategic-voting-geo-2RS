@@ -7,20 +7,31 @@ name = "svgeo"
 version = "0.1.0"
 description = "Geography of strategic voting: coordination and population density in the 2002 and 2022 French presidential first rounds"
 requires-python = ">=3.10"
+# Core: scraping, indices, density and the analysis notebooks. Exact tested versions: requirements-lock.txt
 dependencies = [
-    "pandas>=2.0",
-    "numpy",
-    "scipy",
-    "statsmodels",
-    "matplotlib",
-    "requests",
-    "beautifulsoup4",
-    "openpyxl",
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "statsmodels>=0.14",
+    "matplotlib>=3.8",
+    "requests>=2.31",
+    "urllib3>=2",
+    "beautifulsoup4>=4.12",
+    "openpyxl>=3.1",
 ]
 
 [project.optional-dependencies]
+# Maps, spatial analysis and the interactive page (maps_departements.ipynb, the spatial section of
+# analysis_departements.ipynb, build_department_explorer.py)
+maps = ["geopandas>=1.0", "shapely>=2.0", "seaborn>=0.13", "plotly>=5.18"]
+# Only if the election site refuses plain requests (HTTP 403)
 scraping = ["curl_cffi"]
-dev = ["pytest", "jupyter"]
+dev = ["pytest>=8", "jupyter", "nbconvert"]
+all = ["svgeo[maps,scraping,dev]"]
 
 [tool.setuptools]
 packages = ["svgeo"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: rebuilds the processed data from the raw data (about a minute); skip with -m \"not slow\""]
