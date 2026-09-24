@@ -89,7 +89,9 @@ strongholds: the north-east, where Le Pen was strong, is more concentrated than 
 south-west, Lassalle's home region, less. A strong local favourite concentrates the vote through sincere support,
 which HHI cannot tell apart from coordination, and the residual map below should be read with that in mind.
 
-Turnout does not account for the 2022 density association (see *Turnout* below).
+Turnout does not account for the 2022 density association (see *Turnout* below). With INSEE's urban–rural
+classification, the 2022 association comes mostly from the dense urban communes rather than from a gradual
+urban–rural gradient (see *Urban–rural classification* below).
 
 These results describe associations. They do not show that density or urbanization causes coordination, and
 geographic concentration of the vote is not the same as individual strategic coordination.
@@ -188,7 +190,9 @@ of the data folder.
   * `1_Pop_annu_compo_evol_depreg.xlsx`, *Estimations de population : population annuelle et composantes de
     l'évolution démographique par département et région* (population on 1 January, one sheet per year);
   * `base-cc-serie-historique-2022.CSV` and `meta_base-cc-serie-historique-2022.CSV`, *Séries historiques du
-    recensement, base communale* (commune populations `D99_POP`, `P06_POP`, `P22_POP` and surface `SUPERF`).
+    recensement, base communale* (commune populations `D99_POP`, `P06_POP`, `P22_POP` and surface `SUPERF`);
+  * `grille_densite_2025_geo2025.xlsx`, *La grille de densité 2025*, file for the 2025 geography
+    (`fichier_diffusion_2025.xlsx` on <https://www.insee.fr/fr/information/8571524>, saved under this name).
 * **Département boundaries** for the maps, downloaded by hand into `data/raw/geography/departements-100m.geojson`
   (GeoJSON with a `code` property holding the département code, in any CRS).
 
@@ -246,6 +250,29 @@ Manche), Corsica (more than half of the communes in 2002, 35–42% in 2022), and
 Lozère, where the ratio rule removes many communes. The commune results therefore describe these areas less well, and
 Corsica hardly at all. `audit_communes.ipynb` re-estimates the relationship with a broader sample that only
 excludes communes with positive evidence of a mismatch, and the conclusions are the same.
+
+</details>
+
+<details>
+<summary><strong>Urban–rural classification</strong></summary>
+
+Commune density divides the population by the whole surface, so a small town surrounded by forest looks as sparse as
+a scattered village. INSEE's density grid (*grille communale de densité 2025*) classifies communes instead by how
+concentrated their population is on 1 km² cells: dense urban, intermediate urban and rural, with rural communes split
+by whether they belong to a city's commuter area (periurban rural and non-periurban rural). The grid uses the 2022
+population and is applied to both elections. Results for communes with at least 500 expressed votes:
+
+* **2022:** the 683 dense urban communes are clearly more concentrated than the rest (HHI 0.019 higher than
+  non-periurban rural communes), while intermediate urban, periurban rural and non-periurban rural communes hardly
+  differ from each other. The association is a big-city difference more than a gradual urban–rural gradient. Within
+  départements, the dense urban difference becomes small and not significant, but log density keeps a positive
+  coefficient, including within categories.
+* **2002:** the pattern is reversed: non-periurban rural communes are the most concentrated, about 0.006–0.009 above
+  every other category, within départements too.
+* At département level, the share of the population living in rural communes tells the same story as log density
+  (less concentrated where it is higher in 2022, no relationship in 2002), with a weaker fit.
+
+Details in `notebooks/analysis_communes.ipynb` (§5) and `notebooks/analysis_departements.ipynb` (§2).
 
 </details>
 
