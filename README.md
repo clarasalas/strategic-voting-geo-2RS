@@ -244,7 +244,7 @@ and 74 for flagged ones in 2002, against 241 in the sample), and concentrated in
 the most mergers (in 2002, 58% of the communes of Maine-et-Loire are excluded, and 28–29% in Calvados, Orne and
 Manche), Corsica (more than half of the communes in 2002, 35–42% in 2022), and mountain villages of Alpes-Maritimes and
 Lozère, where the ratio rule removes many communes. The commune results therefore describe these areas less well, and
-Corsica hardly at all. `audit_communes.ipynb` (§3) re-estimates the relationship with a broader sample that only
+Corsica hardly at all. `audit_communes.ipynb` re-estimates the relationship with a broader sample that only
 excludes communes with positive evidence of a mismatch, and the conclusions are the same.
 
 </details>
@@ -256,7 +256,7 @@ Turnout does not account for the density association. In 2022, adding first-roun
 leaves the density slope almost unchanged (0.0094 to 0.0090). Corsica has by far the lowest turnout (about 60%) and a
 low HHI in 2022; without its two départements, lower turnout clearly goes with a more concentrated vote in 2022, and
 the density slope shrinks by about a quarter (0.0091 to 0.0072) but stays clearly significant. In 2002, once Corsica
-is set aside, HHI is related to neither turnout nor density. Details in `notebooks/analysis_departements.ipynb`, §5.
+is set aside, HHI is related to neither turnout nor density. Details in `notebooks/analysis_departements.ipynb`.
 
 </details>
 
