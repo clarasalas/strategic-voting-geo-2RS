@@ -89,6 +89,8 @@ strongholds: the north-east, where Le Pen was strong, is more concentrated than 
 south-west, Lassalle's home region, less. A strong local favourite concentrates the vote through sincere support,
 which HHI cannot tell apart from coordination, and the residual map below should be read with that in mind.
 
+Turnout does not account for the 2022 density association (see *Turnout* below).
+
 These results describe associations. They do not show that density or urbanization causes coordination, and
 geographic concentration of the vote is not the same as individual strategic coordination.
 
@@ -244,6 +246,17 @@ Manche), Corsica (more than half of the communes in 2002, 35–42% in 2022), and
 Lozère, where the ratio rule removes many communes. The commune results therefore describe these areas less well, and
 Corsica hardly at all. `audit_communes.ipynb` (§3) re-estimates the relationship with a broader sample that only
 excludes communes with positive evidence of a mismatch, and the conclusions are the same.
+
+</details>
+
+<details>
+<summary><strong>Turnout</strong></summary>
+
+Turnout does not account for the density association. In 2022, adding first-round turnout to the regression
+leaves the density slope almost unchanged (0.0094 to 0.0090). Corsica has by far the lowest turnout (about 60%) and a
+low HHI in 2022; without its two départements, lower turnout clearly goes with a more concentrated vote in 2022, and
+the density slope shrinks by about a quarter (0.0091 to 0.0072) but stays clearly significant. In 2002, once Corsica
+is set aside, HHI is related to neither turnout nor density. Details in `notebooks/analysis_departements.ipynb`, §5.
 
 </details>
 
