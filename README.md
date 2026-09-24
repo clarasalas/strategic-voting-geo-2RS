@@ -36,13 +36,16 @@ reach the runoff. The model asks how coordination arises; this project looks at 
 results. Both study the same two elections: 2002 is the textbook coordination failure, when the left split and its
 front-runner missed the runoff; 2022 is the contrasting case.
 
-**Why population density.** Coordinating on a viable candidate requires voters to share expectations about who can
-reach the second round, and those expectations spread through interactions between people. Denser places have more
-people, more interactions and denser social networks, so information about who is viable should circulate more
-there. The hypothesis is that the first-round vote is more concentrated where population density is higher. Density
-is used as a proxy for these interaction networks, not as a measure of voters' individual characteristics. Density
-also goes with other differences between places (education, age, income), which could produce the same pattern, and
-the analysis does not control for them.
+**Why population density.** In the model, voters coordinate by reading a public poll: every voter sees the same poll,
+and voters do not talk to each other. Real polls are national too, the same in Paris and in Lozère. If coordination
+still varies from place to place, the difference cannot come from the polls themselves, but from how their
+information reaches voters and is acted on: whether people follow the polls, talk about them, and end up sharing the
+same view of who can reach the runoff. Denser places have more people and more interactions, so poll information
+should circulate more there and voters' expectations should line up more closely behind it. The hypothesis is that
+the first-round vote is more concentrated where population density is higher. Density stands in for these
+interactions: the data observe neither the interactions nor voters' exposure to polls directly. Density also goes with
+other differences between places (education, age, income), which could produce the same pattern, and the analysis
+does not control for them.
 
 The main measure is the Herfindahl–Hirschman index (HHI), the sum of the squared vote shares: higher values mean a
 more concentrated first-round vote. HHI is used to compare 2002 and 2022 because it does not depend on the number of
@@ -74,8 +77,17 @@ absent. The negative slope in the full commune sample comes mostly from very sma
 mechanically inflate concentration. It is smaller with the finite-electorate corrected HHI, which is no longer
 significantly related to density once communes with fewer than 500 expressed votes are excluded; the observed HHI
 slope is then close to zero and it disappears above 1,000 votes. The commune sample leaves out 8% of the 2002
-communes, mostly small ones, and they are not spread evenly across France (see *Who is left out of the commune sample*
-below).
+communes, mostly small ones, and they are not spread evenly across France (see *Exclusions* below).
+
+Neighbouring départements are alike: the residuals of the density regression are spatially autocorrelated, strongly in
+2022 (Moran's I between 0.43 and 0.46 whatever the definition of neighbours) and moderately in 2002. This does not
+weaken the 2022 slope, whose standard error does not grow when spatial dependence is allowed for (standard errors
+clustered by region, or Conley standard errors). But about a third of it is a difference between regions: with region
+fixed effects the slope falls from 0.0094 to 0.0064 (p = 0.047, with only 13 regions) and the residual
+autocorrelation disappears. The 2002 slope stays at zero in every specification. The clusters are largely candidates'
+strongholds: the north-east, where Le Pen was strong, is more concentrated than its density predicts, and the
+south-west, Lassalle's home region, less. A strong local favourite concentrates the vote through sincere support,
+which HHI cannot tell apart from coordination, and the residual map below should be read with that in mind.
 
 These results describe associations. They do not show that density or urbanization causes coordination, and
 geographic concentration of the vote is not the same as individual strategic coordination.
@@ -91,27 +103,6 @@ change in CENP is kept as a supplementary figure, <code>figures/figure_s1_delta_
 </sub></p>
 
 The full analysis is in `notebooks/analysis_departements.ipynb`, `analysis_communes.ipynb`, and `audit_communes.ipynb`.
-
-## Who is left out of the commune sample
-
-Commune populations and surfaces come from INSEE in a single recent commune geography, so a commune from the election
-results can only be used if it can be matched to that geography. In 2002, 2,978 of the 36,559 metropolitan communes
-(8.1%, and 3.3% of expressed votes) are left out of the main sample:
-
-* 1,842 have no INSEE match, because they later merged into a *commune nouvelle*;
-* 1,136 are flagged as possible boundary changes (registered voters / population outside [0.4, 1.2]). Most of them
-  (886) are flagged because the ratio is above 1.2, which usually means many registered voters do not live in the
-  commune rather than a boundary change.
-
-In 2022, 708 of 34,820 communes are left out (2.0%, and 0.6% of expressed votes).
-
-The excluded communes are not a random subset. They are smaller (median 161 expressed votes for unmatched communes
-and 74 for flagged ones in 2002, against 241 in the sample), and concentrated in a few areas: the départements with
-the most mergers (in 2002, 58% of the communes of Maine-et-Loire are excluded, and 28–29% in Calvados, Orne and
-Manche), Corsica (more than half of the communes in 2002, 35–42% in 2022), and mountain villages of Alpes-Maritimes and
-Lozère, where the ratio rule removes many communes. The commune results therefore describe these areas less well, and
-Corsica hardly at all. `audit_communes.ipynb` (§3) re-estimates the relationship with a broader sample that only
-excludes communes with positive evidence of a mismatch, and the conclusions are the same.
 
 ## Reproduce
 
@@ -146,6 +137,7 @@ svgeo/                       shared code (pip install -e .)
   communes.py                commune scraper
   indices.py                 HHI, corrected HHI, ENP, CENP, cliff measures
   analysis.py                association statistics and plots
+  spatial.py                 Moran's I, local clusters, Conley standard errors
 scripts/                     build the data, in order, then the interactive page
   01_scrape_departements.py
   02_scrape_communes.py
@@ -227,6 +219,30 @@ of the data folder.
 * **Paris, Lyon, and Marseille** are whole communes. Their arrondissement pages are only used to check that the totals
   add up.
 * 2002 and 2022 are two separate cross-sections, not a panel.
+
+</details>
+
+<details>
+<summary><strong>Exclusions</strong></summary>
+
+Commune populations and surfaces come from INSEE in a single recent commune geography, so a commune from the election
+results can only be used if it can be matched to that geography. In 2002, 2,978 of the 36,559 metropolitan communes
+(8.1%, and 3.3% of expressed votes) are left out of the main sample:
+
+* 1,842 have no INSEE match, because they later merged into a *commune nouvelle*;
+* 1,136 are flagged as possible boundary changes (registered voters / population outside [0.4, 1.2]). Most of them
+  (886) are flagged because the ratio is above 1.2, which usually means many registered voters do not live in the
+  commune rather than a boundary change.
+
+In 2022, 708 of 34,820 communes are left out (2.0%, and 0.6% of expressed votes).
+
+The excluded communes are not a random subset. They are smaller (median 161 expressed votes for unmatched communes
+and 74 for flagged ones in 2002, against 241 in the sample), and concentrated in a few areas: the départements with
+the most mergers (in 2002, 58% of the communes of Maine-et-Loire are excluded, and 28–29% in Calvados, Orne and
+Manche), Corsica (more than half of the communes in 2002, 35–42% in 2022), and mountain villages of Alpes-Maritimes and
+Lozère, where the ratio rule removes many communes. The commune results therefore describe these areas less well, and
+Corsica hardly at all. `audit_communes.ipynb` (§3) re-estimates the relationship with a broader sample that only
+excludes communes with positive evidence of a mismatch, and the conclusions are the same.
 
 </details>
 
