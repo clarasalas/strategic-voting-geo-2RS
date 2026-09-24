@@ -93,13 +93,14 @@ These results describe associations. They do not show that density or urbanizati
 geographic concentration of the vote is not the same as individual strategic coordination.
 
 <p align="center">
-  <img src="figures/figure_1_cenp_departements_2002_2022.png" width="49%" alt="CENP by département in 2002 and 2022">
-  <img src="figures/figure_3_residual_cenp_2022.png" width="49%" alt="Residual CENP relative to the 2022 density relationship">
+  <img src="figures/figure_1_hhi_departements_2002_2022.png" width="49%" alt="HHI by département in 2002 and 2022">
+  <img src="figures/figure_3_residual_hhi_2022.png" width="49%" alt="Residual HHI relative to the 2022 density relationship">
 </p>
 
 <p align="center"><sub>
-Left: CENP within each election. Right: residual CENP in 2022 after a descriptive regression on log density. The
-change in CENP is kept as a supplementary figure, <code>figures/figure_s1_delta_cenp_departements.png</code>.
+Left: HHI within each election, each map with its own colour scale (the change is the map at the top). Right:
+residual HHI in 2022 after a descriptive regression on log density. The change in CENP is kept as a supplementary
+figure, <code>figures/figure_s1_delta_cenp_departements.png</code>.
 </sub></p>
 
 The full analysis is in `notebooks/analysis_departements.ipynb`, `analysis_communes.ipynb`, and `audit_communes.ipynb`.
