@@ -29,11 +29,11 @@ from matplotlib.ticker import MaxNLocator
 from plotly.offline import get_plotlyjs
 from shapely.geometry import mapping
 
-from svgeo.config import DEPARTMENT_DENSITY, DEPARTMENT_RESULTS, METRO_CODES, RAW_DIR, ROOT, YEARS
+from svgeo.config import DEPARTMENT_BOUNDARIES, DEPARTMENT_DENSITY, DEPARTMENT_RESULTS, METRO_CODES, ROOT, YEARS
 from svgeo.utils import read_csv
 
 # ---- Paths ----
-GEOMETRY_PATH = RAW_DIR / "geography" / "departements-100m.geojson"
+GEOMETRY_PATH = DEPARTMENT_BOUNDARIES
 GEOMETRY_CODE_COLUMN = "code"  # property of the GeoJSON holding the département code ('01', '2A', …)
 OUTPUT_HTML = ROOT / "docs" / "index.html"
 REPOSITORY_URL = "https://github.com/clarasalas/strategic-voting-geo-2RS"

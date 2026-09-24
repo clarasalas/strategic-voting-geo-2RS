@@ -5,7 +5,8 @@ INSEE inputs (data/raw/insee/, downloaded by hand — see README)
   base-cc-serie-historique-2022.CSV     commune populations (D99_POP, P06_POP, P22_POP) and surface SUPERF (km²)
 
 Départements: density = population on 1 January of the election year / surface (sum of the commune surfaces,
-2022 geography, same for both years). Main sample: the 96 metropolitan départements (`in_main_sample`).
+2022 geography, same for both years). Main sample: the 96 metropolitan départements (`in_main_sample`). `region_code` = current (2016) region, from the INSEE
+`Code REG-DEP` of the latest year, used for both years (metropolitan départements only).
 
 Communes: the INSEE file uses a single recent commune geography (later than the 2022 election).
   * 2022 density = P22_POP / SUPERF
@@ -68,11 +69,12 @@ def read_population_sheet(year):
     is_overseas = data["reg_dep_code"].str.fullmatch(r"97\d", na=False)
     data["department_code"] = np.where(is_metro, data["reg_dep_code"].str[2:],
                                        np.where(is_overseas, data["reg_dep_code"], None))
+    data["region_code"] = np.where(is_metro, data["reg_dep_code"].str[:2], None)  # 2016 regions, metropolitan only
     deps = data[data["department_code"].notna()].copy()
     deps["population"] = pd.to_numeric(deps["population"], errors="raise")
     deps["insee_name"] = deps["insee_name"].astype(str).str.strip()
     deps.insert(0, "year", year)
-    return deps[["year", "department_code", "insee_name", "reg_dep_code", "population"]]
+    return deps[["year", "department_code", "region_code", "insee_name", "reg_dep_code", "population"]]
 
 
 def department_surfaces():
@@ -102,12 +104,15 @@ def departements():
     no_surface = density[density["_merge"] == "left_only"]
     report("every INSEE département has a surface", no_surface.empty, no_surface)
     density = density.drop(columns="_merge")
+    # Each sheet codes the regions of its own year (the 2002 sheet: the 22 pre-2016 regions); use the current ones
+    latest = density[density["year"] == max(YEARS)].set_index("department_code")["region_code"]
+    density["region_code"] = density["department_code"].map(latest)
     density["density"] = density["population"] / density["surface_km2"]
     density["log_density"] = np.log(density["density"])
 
     # Merge key year × department_code; all territories of the election data are kept, flagged by in_main_sample
-    merged = coord.merge(density[["year", "department_code", "insee_name", "population", "surface_km2", "density",
-                                  "log_density"]],
+    merged = coord.merge(density[["year", "department_code", "region_code", "insee_name", "population", "surface_km2",
+                                  "density", "log_density"]],
                          on=["year", "department_code"], how="outer", validate="one_to_one", indicator=True)
     merged["in_main_sample"] = merged["department_code"].isin(METRO_CODES)
     print("Unmatched — election data only:",
@@ -117,8 +122,8 @@ def departements():
     unmatched_metro = merged[merged["in_main_sample"] & (merged["_merge"] != "both")]
     assert unmatched_metro.empty, f"metropolitan départements not matched:\n{unmatched_metro[['year', 'department_code']]}"
     merged = merged[merged["_merge"] != "right_only"].drop(columns="_merge")
-    merged = merged[[*coord.columns, "population", "surface_km2", "density", "log_density", "in_main_sample",
-                     "insee_name"]].sort_values(["year", "department_code"]).reset_index(drop=True)
+    merged = merged[[*coord.columns, "region_code", "population", "surface_km2", "density", "log_density",
+                     "in_main_sample", "insee_name"]].sort_values(["year", "department_code"]).reset_index(drop=True)
 
     main = merged[merged["in_main_sample"]]
     for year in YEARS:
@@ -132,6 +137,8 @@ def departements():
     report("densities positive, log density finite", (main["density"] > 0).all() and np.isfinite(main["log_density"]).all())
     report("surface identical in 2002 and 2022", (main.groupby("department_code")["surface_km2"].nunique() == 1).all())
     report("no overseas territory in the main sample", main["department_type"].eq("metropole").all())
+    report("13 metropolitan regions, one per département", main["region_code"].notna().all()
+           and main["region_code"].nunique() == 13 and (main.groupby("department_code")["region_code"].nunique() == 1).all())
     name_diff = main[main["department_name"].map(norm_text) != main["insee_name"].map(norm_text)]
     print(f"Name differences election / INSEE (diagnostic, spelling only expected): {len(name_diff)}")
     show(name_diff[["year", "department_code", "department_name", "insee_name"]])

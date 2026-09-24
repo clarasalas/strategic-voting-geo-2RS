@@ -30,6 +30,8 @@ COMMUNE_FAILURES = {y: RAW_DIR / f"presidential_{y}_communes_failures.csv" for y
 INSEE_POP_DEPARTEMENTS = INSEE_DIR / "1_Pop_annu_compo_evol_depreg.xlsx"
 INSEE_COMMUNES = INSEE_DIR / "base-cc-serie-historique-2022.CSV"
 INSEE_COMMUNES_META = INSEE_DIR / "meta_base-cc-serie-historique-2022.CSV"
+# Département boundaries (GeoJSON with a `code` property, downloaded by hand)
+DEPARTMENT_BOUNDARIES = RAW_DIR / "geography" / "departements-100m.geojson"
 
 # ---- Processed files ----
 DEPARTMENT_RESULTS = PROCESSED_DIR / "presidential_departments_2002_2022.csv"
@@ -43,7 +45,8 @@ COMMUNE_DENSITY = PROCESSED_DIR / "coordination_density_communes_corrected.csv"
 COMMUNE_DENSITY_BY_YEAR = {y: PROCESSED_DIR / f"coordination_density_communes_{y}_corrected.csv" for y in YEARS}
 
 # Codes must stay text ('01', '2A', '971'): pass these dtypes to pd.read_csv
-CODE_DTYPES = {"dep_code": str, "department_code": str, "commune_code": str, "commune_code_source": str}
+CODE_DTYPES = {"dep_code": str, "department_code": str, "commune_code": str, "commune_code_source": str,
+               "region_code": str}
 
 # ---- Elections ----
 EXPECTED_K = {2002: 16, 2022: 12}  # first-round candidates nationally (round 2 always has 2)
