@@ -11,7 +11,8 @@ from svgeo.config import YEARS
 def association_stats(df, y, weighted=False, x_log="log_density", x_raw="density"):
     """Pearson (y vs log density), Spearman (y vs density — same as with log density), OLS y ~ log_density
     (coefficient, SE, HC1-robust SE, p-values, R²); optionally WLS weighted by expressed votes (HC1)."""
-    df = df[[y, x_log, x_raw] + (["expressed"] if "expressed" in df else [])].dropna()
+    columns = dict.fromkeys([y, x_log, x_raw] + (["expressed"] if "expressed" in df else []))  # x_log may be x_raw
+    df = df[list(columns)].dropna()
     pearson = stats.pearsonr(df[y], df[x_log])
     spearman = stats.spearmanr(df[y], df[x_raw])
     ols = smf.ols(f"{y} ~ {x_log}", data=df).fit()

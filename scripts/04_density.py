@@ -3,10 +3,13 @@
 INSEE inputs (data/raw/insee/, downloaded by hand — see README)
   1_Pop_annu_compo_evol_depreg.xlsx     population on 1 January of each year, by département
   base-cc-serie-historique-2022.CSV     commune populations (D99_POP, P06_POP, P22_POP) and surface SUPERF (km²)
+  grille_densite_2025_geo2025.xlsx      grille communale de densité 2025 (communes and départements)
 
 Départements: density = population on 1 January of the election year / surface (sum of the commune surfaces,
 2022 geography, same for both years). Main sample: the 96 metropolitan départements (`in_main_sample`). `region_code` = current (2016) region, from the INSEE
 `Code REG-DEP` of the latest year, used for both years (metropolitan départements only).
+`rural_population_share` = share of the population living in rural communes of the INSEE density grid (2022
+population, used for both years).
 
 Communes: the INSEE file uses a single recent commune geography (later than the 2022 election).
   * 2022 density = P22_POP / SUPERF
@@ -15,6 +18,9 @@ Communes: the INSEE file uses a single recent commune geography (later than the 
   * 2002 communes that later merged into a *commune nouvelle* either have no INSEE code (unmatched) or match a larger
     2022 commune. The latter are flagged by registered / population outside [0.4, 1.2] (`possible_boundary_change`).
   * main_sample = metropolitan, INSEE match, finite log density, CENP available, no possible boundary change.
+  * density_grid (dense urban / intermediate urban / rural) and density_grid_aav (rural split into periurban and
+    non-periurban): INSEE density grid 2025, which classifies communes by how concentrated their population is on
+    1 km² cells, not by population / total surface. Based on the 2022 population, used for both years.
   Excluded observations are kept in the files with their flags.
 
 Outputs
@@ -31,7 +37,8 @@ import pandas as pd
 
 from svgeo.config import (ARRONDISSEMENTS, COMMUNE_DENSITY, COMMUNE_DENSITY_BY_YEAR, COMMUNE_INDICES,
                           DEPARTMENT_DENSITY, DEPARTMENT_DENSITY_WIDE, DEPARTMENT_INDICES, INSEE_COMMUNES,
-                          INSEE_POP_DEPARTEMENTS, METRO_CODES, PLM, YEARS)
+                          DENSITY_GRID_AAV_LEVELS, DENSITY_GRID_LEVELS, INSEE_DENSITY_GRID, INSEE_POP_DEPARTEMENTS,
+                          METRO_CODES, PLM, YEARS)
 from svgeo.utils import norm_text, read_csv, report, show
 
 DENSEST_DEPARTEMENTS = {"75", "92", "93", "94"}  # Paris and the petite couronne
@@ -122,8 +129,12 @@ def departements():
     unmatched_metro = merged[merged["in_main_sample"] & (merged["_merge"] != "both")]
     assert unmatched_metro.empty, f"metropolitan départements not matched:\n{unmatched_metro[['year', 'department_code']]}"
     merged = merged[merged["_merge"] != "right_only"].drop(columns="_merge")
+    rural = pd.read_excel(INSEE_DENSITY_GRID, sheet_name="Maille départementale", header=4, dtype={"DEP": str})
+    rural = rural.rename(columns={"DEP": "department_code"}).assign(rural_population_share=lambda d: d["P_RURAL"] / 100)
+    merged = merged.merge(rural[["department_code", "rural_population_share"]], on="department_code", how="left",
+                          validate="many_to_one")
     merged = merged[[*coord.columns, "region_code", "population", "surface_km2", "density", "log_density",
-                     "in_main_sample", "insee_name"]].sort_values(["year", "department_code"]).reset_index(drop=True)
+                     "rural_population_share", "in_main_sample", "insee_name"]].sort_values(["year", "department_code"]).reset_index(drop=True)
 
     main = merged[merged["in_main_sample"]]
     for year in YEARS:
@@ -137,6 +148,8 @@ def departements():
     report("densities positive, log density finite", (main["density"] > 0).all() and np.isfinite(main["log_density"]).all())
     report("surface identical in 2002 and 2022", (main.groupby("department_code")["surface_km2"].nunique() == 1).all())
     report("no overseas territory in the main sample", main["department_type"].eq("metropole").all())
+    report("rural population share in [0, 1] for every metropolitan département",
+           main["rural_population_share"].between(0, 1).all())
     report("13 metropolitan regions, one per département", main["region_code"].notna().all()
            and main["region_code"].nunique() == 13 and (main.groupby("department_code")["region_code"].nunique() == 1).all())
     name_diff = main[main["department_name"].map(norm_text) != main["insee_name"].map(norm_text)]
@@ -172,6 +185,16 @@ def load_insee_communes():
     return insee
 
 
+def load_density_grid():
+    """INSEE density grid 2025, one row per commune: density_grid (3 levels) and density_grid_aav (4 levels)."""
+    grid = pd.read_excel(INSEE_DENSITY_GRID, sheet_name="Maille communale", header=4, dtype={"CODGEO": str})
+    report("density grid: commune codes unique", grid["CODGEO"].is_unique)
+    report("density grid: expected levels", set(grid["DENS"]) == set(DENSITY_GRID_LEVELS)
+           and set(grid["DENS_AAV"]) == set(DENSITY_GRID_AAV_LEVELS))
+    return pd.DataFrame({"commune_code": grid["CODGEO"], "density_grid": grid["DENS"].map(DENSITY_GRID_LEVELS),
+                         "density_grid_aav": grid["DENS_AAV"].map(DENSITY_GRID_AAV_LEVELS)})
+
+
 def commune_density(insee):
     """One row per year × commune: census population, 2002 interpolation, density population, density."""
     rows = []
@@ -202,6 +225,7 @@ def communes():
     merged["insee_match"] = merged["_merge"] == "both"
     merged = merged.drop(columns="_merge")
     merged["metropolitan"] = merged["department_code"].isin(METRO_CODES)
+    merged = merged.merge(load_density_grid(), on="commune_code", how="left", validate="many_to_one")
     # Census population (D99_POP in 2002), not the density population: the sample rule does not depend on it
     merged["registered_to_population"] = merged["registered"] / merged["population"]
     merged["possible_boundary_change"] = merged["insee_match"] & ~merged["registered_to_population"].between(0.4, 1.2)
@@ -218,6 +242,8 @@ def communes():
     report("2022 density = population / surface_km2", np.allclose(v22["density"], v22["population"] / v22["surface_km2"]))
     report("no duplicated commune-year rows", not merged.duplicated(["year", "commune_code"]).any())
     main = merged[merged["main_sample"]]
+    report("main sample: every commune has a density grid level", main["density_grid"].notna().all(),
+           main.loc[main["density_grid"].isna(), ["year", "commune_code", "commune_name"]])
     report("main sample: population, surface, density positive and log density finite",
            (main["population"] > 0).all() and (main["surface_km2"] > 0).all() and np.isfinite(main["log_density"]).all())
     report("candidate totals consistent with expressed votes", merged["turnout_matches_sum"].all(),

@@ -30,6 +30,8 @@ COMMUNE_FAILURES = {y: RAW_DIR / f"presidential_{y}_communes_failures.csv" for y
 INSEE_POP_DEPARTEMENTS = INSEE_DIR / "1_Pop_annu_compo_evol_depreg.xlsx"
 INSEE_COMMUNES = INSEE_DIR / "base-cc-serie-historique-2022.CSV"
 INSEE_COMMUNES_META = INSEE_DIR / "meta_base-cc-serie-historique-2022.CSV"
+# Grille de densité 2025 (geography 1 January 2025, the same as the commune file), saved under this name
+INSEE_DENSITY_GRID = INSEE_DIR / "grille_densite_2025_geo2025.xlsx"
 # Département boundaries (GeoJSON with a `code` property, downloaded by hand)
 DEPARTMENT_BOUNDARIES = RAW_DIR / "geography" / "departements-100m.geojson"
 
@@ -47,6 +49,11 @@ COMMUNE_DENSITY_BY_YEAR = {y: PROCESSED_DIR / f"coordination_density_communes_{y
 # Codes must stay text ('01', '2A', '971'): pass these dtypes to pd.read_csv
 CODE_DTYPES = {"dep_code": str, "department_code": str, "commune_code": str, "commune_code_source": str,
                "region_code": str}
+
+# ---- INSEE density grid (grille communale de densité 2025), ordered from most to least dense ----
+DENSITY_GRID_LEVELS = {1: "dense urban", 2: "intermediate urban", 3: "rural"}
+# The same, with rural communes split by whether they belong to a city's commuter area (aire d'attraction des villes)
+DENSITY_GRID_AAV_LEVELS = {1: "dense urban", 2: "intermediate urban", 3: "periurban rural", 4: "non-periurban rural"}
 
 # ---- Elections ----
 EXPECTED_K = {2002: 16, 2022: 12}  # first-round candidates nationally (round 2 always has 2)
