@@ -149,12 +149,14 @@ scripts/                     build the data, in order, then the interactive page
   03_coordination_indices.py
   04_density.py
   build_department_explorer.py   interactive map -> docs/index.html
+  package_zenodo.py          builds the Zenodo data deposit -> data/zenodo/
+  download_data.py           downloads the deposit and the boundaries into data/
 notebooks/                   analysis (read the processed CSVs only)
   analysis_departements.ipynb
   analysis_communes.ipynb
   audit_communes.ipynb       robustness audit of the commune result
   maps_departements.ipynb    static report maps -> figures/
-docs/                        GitHub Pages site (generated index.html and publishing notes)
+docs/                        GitHub Pages site (generated index.html, publishing notes) and the deposit README
 figures/                     static figures (PNG 300 dpi and PDF)
 tests/
 ```
@@ -186,15 +188,17 @@ of the data folder.
 
 * **Election results**, scraped from the Ministère de l'Intérieur archive,
   <https://www.archives-resultats-elections.interieur.gouv.fr/> (presidential elections 2002 and 2022, first round).
-* **INSEE files**, downloaded by hand into `data/raw/insee/`:
-  * `1_Pop_annu_compo_evol_depreg.xlsx`, *Estimations de population : population annuelle et composantes de
-    l'évolution démographique par département et région* (population on 1 January, one sheet per year);
-  * `base-cc-serie-historique-2022.CSV` and `meta_base-cc-serie-historique-2022.CSV`, *Séries historiques du
-    recensement, base communale* (commune populations `D99_POP`, `P06_POP`, `P22_POP` and surface `SUPERF`);
+* **INSEE files** (Licence Ouverte), downloaded by hand into `data/raw/insee/`:
+  * `1_Pop_annu_compo_evol_depreg.xlsx`, table DEP1 of *La situation démographique en 2025* (population on 1 January
+    by département, one sheet per year), <https://www.insee.fr/fr/statistiques/8999023?sommaire=8999231>;
+  * `base-cc-serie-historique-2022.CSV` and `meta_base-cc-serie-historique-2022.CSV`, from
+    `base-cc-serie-historique-2022_csv.zip` on *Séries historiques en 2022* (commune populations `D99_POP`, `P06_POP`,
+    `P22_POP` and surface `SUPERF`, geography of 1 January 2025), <https://www.insee.fr/fr/statistiques/8582555>;
   * `grille_densite_2025_geo2025.xlsx`, *La grille de densité 2025*, file for the 2025 geography
     (`fichier_diffusion_2025.xlsx` on <https://www.insee.fr/fr/information/8571524>, saved under this name).
-* **Département boundaries** for the maps, downloaded by hand into `data/raw/geography/departements-100m.geojson`
-  (GeoJSON with a `code` property holding the département code, in any CRS).
+* **Département boundaries** for the maps, Etalab *contours administratifs* 2025 (ODbL), saved as
+  `data/raw/geography/departements-100m.geojson`:
+  <https://etalab-datasets.geo.data.gouv.fr/contours-administratifs/2025/geojson/departements-100m.geojson>.
 
 </details>
 

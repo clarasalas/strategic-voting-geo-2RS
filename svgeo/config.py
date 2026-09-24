@@ -32,8 +32,14 @@ INSEE_COMMUNES = INSEE_DIR / "base-cc-serie-historique-2022.CSV"
 INSEE_COMMUNES_META = INSEE_DIR / "meta_base-cc-serie-historique-2022.CSV"
 # Grille de densité 2025 (geography 1 January 2025, the same as the commune file), saved under this name
 INSEE_DENSITY_GRID = INSEE_DIR / "grille_densite_2025_geo2025.xlsx"
-# Département boundaries (GeoJSON with a `code` property, downloaded by hand)
+# Département boundaries: Etalab, contours administratifs 2025 (ODbL), fetched by scripts/download_data.py
 DEPARTMENT_BOUNDARIES = RAW_DIR / "geography" / "departements-100m.geojson"
+DEPARTMENT_BOUNDARIES_URL = ("https://etalab-datasets.geo.data.gouv.fr/contours-administratifs/2025/geojson/"
+                             "departements-100m.geojson")
+DEPARTMENT_BOUNDARIES_SHA256 = "10f5c6ffc2dc857b4f4fc360297f97f6f01fc3ba3eb3a326ee92b76baefed447"
+
+# Zenodo data deposit (scripts/package_zenodo.py builds it, scripts/download_data.py fetches it)
+ZENODO_RECORD = None  # record id, e.g. "12345678", once the deposit is published
 
 # ---- Processed files ----
 DEPARTMENT_RESULTS = PROCESSED_DIR / "presidential_departments_2002_2022.csv"
