@@ -21,7 +21,7 @@ and how that concentration relates to population density.
 <p align="center">
 Click the map to explore every département: vote concentration (HHI) and CENP in 2002 and 2022, population density,
 the position of each département relative to the density relationship, and its first-round vote shares.
-</sub></p>
+</p>
 
 ## About
 
@@ -105,7 +105,7 @@ geographic concentration of the vote is not the same as individual strategic coo
 Left: HHI within each election, each map with its own colour scale (the change is the map at the top). Right:
 residual HHI in 2022 after a descriptive regression on log density. The change in CENP is kept as a supplementary
 figure, <code>figures/figure_s1_delta_cenp_departements.png</code>.
-</sub></p>
+</p>
 
 The full analysis is in `notebooks/analysis_departements.ipynb`, `analysis_communes.ipynb`, and `audit_communes.ipynb`.
 
@@ -272,7 +272,7 @@ population and is applied to both elections. Results for communes with at least 
 * At département level, the share of the population living in rural communes tells the same story as log density
   (less concentrated where it is higher in 2022, no relationship in 2002), with a weaker fit.
 
-Details in `notebooks/analysis_communes.ipynb` (§5) and `notebooks/analysis_departements.ipynb` (§2).
+Details in `notebooks/analysis_communes.ipynb` and `notebooks/analysis_departements.ipynb`.
 
 </details>
 
