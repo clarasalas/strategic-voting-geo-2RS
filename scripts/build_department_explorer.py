@@ -268,10 +268,11 @@ def build_metrics(dep, regression):
                                      f"Density {last}", "density", ticks=density_ticks,
                                      display_field=f"density_{last}"))
     residual = dep[f"residual_{last}"].dropna()
-    metrics.append(continuous_metric("residual", f"Residual HHI — {last}", f"residual_{last}", DIVERGING_PALETTE,
+    # key "residual" kept so that existing links (#metric=residual) still open this map
+    metrics.append(continuous_metric("residual", f"HHI vs density — {last}", f"residual_{last}", DIVERGING_PALETTE,
                                      residual.min(), residual.max(),
-                                     f"Residual HHI, {last}: observed − predicted from log density (descriptive)",
-                                     f"Residual HHI {last}", "signed", diverging=True,
+                                     f"{last}: vote concentration compared with what density alone would predict",
+                                     f"Difference from density prediction {last}", "signed", diverging=True,
                                      ends=["Less concentrated than predicted by density",
                                            "More concentrated than predicted by density"]))
     return metrics
@@ -596,7 +597,8 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
       "Across départements, the first-round vote was on average " + direction +
       " concentrated where population density was higher " +
       "(descriptive regression of HHI on log density, R² = " + r.r2.toFixed(2) + "). This is an association, " +
-      "not a causal effect.</p></section>" +
+      "not a causal effect. The map “HHI vs density” shows which départements are more (red) or less (blue) " +
+      "concentrated than this trend predicts.</p></section>" +
       "<p class='prompt'>Select a département to explore its results.</p>";
   }
 
@@ -664,11 +666,12 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
       stat(FIRST, densityFmt(d["density_" + FIRST]), "small") + stat(LAST, densityFmt(d["density_" + LAST]), "small") +
       "</div><p class='small'>Inhabitants per km².</p></section>" +
 
-      "<section class='block'><h3>Relative to the " + LAST + " density relationship</h3><div class='stats'>" +
+      "<section class='block'><h3>Compared with density, " + LAST + "</h3><div class='stats'>" +
       stat("Predicted", fixed(d["fitted_" + LAST])) + stat("Actual", fixed(d["hhi_" + LAST])) +
       stat("Residual", signed(residual)) + "</div>" + (verdict ? "<div class='verdict'>" + verdict + "</div>" : "") +
-      "<p class='small'>Prediction from a descriptive regression of HHI on log density across " + r.n +
-      " départements (R² = " + r.r2.toFixed(2) + "). It describes an association, not a causal effect.</p></section>" +
+      "<p class='small'>Predicted: the HHI expected from the département's density, using the trend across all " + r.n +
+      " départements (descriptive regression of HHI on log density, R² = " + r.r2.toFixed(2) + "). Residual = actual − " +
+      "predicted. It describes an association, not a causal effect.</p></section>" +
 
       "<section class='block'><h3>First-round vote shares</h3>" + voteChart(d) + "</section>";
   }
