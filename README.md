@@ -53,43 +53,87 @@ not by itself evidence of strategic voting.
 
 ## Main findings
 
-The first-round vote was more concentrated in 2022 than in 2002. The national HHI (candidate votes summed over
+**The first-round vote became more concentrated from 2002 to 2022.** The national HHI (candidate votes summed over
 metropolitan France) rose from 0.114 to 0.190, that is from 8.75 to 5.25 effective candidates. The typical
 département, measured by the unweighted mean across départements, went from 0.120 to 0.196. HHI increased in 95 of the
-96 départements; Corrèze is the only exception. CENP tells a similar story (mean 0.51 to 0.62, higher in 90
-départements), but it is not the basis of the comparison because it depends on the number of candidates. The change in
-HHI can reflect candidate supply, preferences, campaigns or strategic voting, and these data do not separate them.
+96 départements; Corrèze is the only exception.
 
-The rise is not a mechanical effect of 2002 having more candidates on the ballot. The smallest 2002 candidates took
-very few votes and barely move HHI: removing the three smallest (Gluckstein, Boutin and Lepage, 3.6% of the vote
-together) and sharing their votes proportionally among the others only raises the 2002 national HHI from 0.114 to
-0.122, about a tenth of the gap with 2022. Removing the six smallest gives 0.142, still far below 0.190. The rise comes
-from the top of the ballot: the three leading candidates took 52% of the metropolitan vote in 2002 and 73% in 2022.
+<details>
+<summary>Supporting evidence: CENP and the smallest candidates</summary>
 
-In 2022, denser départements and communes had more concentrated first-round votes, and this association holds with
-HHI, corrected HHI and CENP under the robustness checks of the commune audit. In 2002, the relationship is weak or
-absent. The negative slope in the full commune sample comes mostly from very small communes, where a few voters
-mechanically inflate concentration. It is smaller with the finite-electorate corrected HHI, which is no longer
-significantly related to density once communes with fewer than 500 expressed votes are excluded; the observed HHI
-slope is then close to zero and it disappears above 1,000 votes. The commune sample leaves out 8% of the 2002
-communes, mostly small ones, and they are not spread evenly across France (see *Exclusions* below).
+* CENP tells a similar story (mean 0.51 to 0.62, higher in 90 départements), but it is not the basis of the
+  comparison because it depends on the number of candidates.
+* The rise is not a mechanical effect of 2002 having more candidates on the ballot. The smallest 2002 candidates took
+  very few votes and barely move HHI: removing the three smallest (Gluckstein, Boutin and Lepage, 3.6% of the vote
+  together) and sharing their votes proportionally among the others only raises the 2002 national HHI from 0.114 to
+  0.122, about a tenth of the gap with 2022. Removing the six smallest gives 0.142, still far below 0.190. The rise
+  comes from the top of the ballot: the three leading candidates took 52% of the metropolitan vote in 2002 and 73% in
+  2022.
 
-Neighbouring départements are alike: the residuals of the density regression are spatially autocorrelated, strongly in
-2022 (Moran's I between 0.43 and 0.46 whatever the definition of neighbours) and moderately in 2002. This does not
-weaken the 2022 slope, whose standard error does not grow when spatial dependence is allowed for (standard errors
-clustered by region, or Conley standard errors). But about a third of it is a difference between regions: with region
-fixed effects the slope falls from 0.0094 to 0.0064 (p = 0.047, with only 13 regions) and the residual
-autocorrelation disappears. The 2002 slope stays at zero in every specification. The clusters are largely candidates'
-strongholds: the north-east, where Le Pen was strong, is more concentrated than its density predicts, and the
-south-west, Lassalle's home region, less. A strong local favourite concentrates the vote through sincere support,
-which HHI cannot tell apart from coordination, and the residual map below should be read with that in mind.
+</details>
 
-Turnout does not account for the 2022 density association (see *Turnout* below). With INSEE's urban–rural
-classification, the 2022 association comes mostly from the dense urban communes rather than from a gradual
-urban–rural gradient (see *Urban–rural classification* below).
+**In 2022, denser places had more concentrated votes; in 2002, this relationship was weak or absent.** This holds
+for both départements and communes.
 
-These results describe associations. They do not show that density or urbanization causes coordination, and
-geographic concentration of the vote is not the same as individual strategic coordination.
+<details>
+<summary>Supporting evidence: commune samples and robustness checks</summary>
+
+* In 2022, the association holds with HHI, corrected HHI and CENP under the robustness checks of the commune audit.
+* In 2002, the negative slope in the full commune sample comes mostly from very small communes, where a few voters
+  mechanically inflate concentration. It is smaller with the finite-electorate corrected HHI, which is no longer
+  significantly related to density once communes with fewer than 500 expressed votes are excluded; the observed HHI
+  slope is then close to zero and it disappears above 1,000 votes.
+* The commune sample leaves out 8% of the 2002 communes, mostly small ones, and they are not spread evenly across
+  France (see *Exclusions* below).
+
+</details>
+
+**Density does not explain the whole geography.** Neighbouring départements resemble each other beyond what density
+predicts, largely because of candidates' strongholds: the north-east, where Le Pen was strong, is more concentrated
+than its density predicts, and the south-west, Lassalle's home region, less. A strong local favourite concentrates the
+vote through sincere support, which HHI cannot tell apart from coordination, and the residual map below should be read
+with that in mind. In 2022, the density association is also largely a dense-urban difference rather than a gradual
+rural-to-urban gradient: with INSEE's urban–rural classification, dense urban communes are clearly more concentrated
+than the rest, while the other categories hardly differ from each other.
+
+<details>
+<summary>Supporting evidence: spatial patterns, turnout and urban–rural categories</summary>
+
+**Spatial patterns.** The residuals of the density regression are spatially autocorrelated, strongly in 2022
+(Moran's I between 0.43 and 0.46 whatever the definition of neighbours) and moderately in 2002. This does not weaken
+the 2022 slope, whose standard error does not grow when spatial dependence is allowed for (standard errors clustered
+by region, or Conley standard errors). But about a third of it is a difference between regions: with region fixed
+effects the slope falls from 0.0094 to 0.0064 (p = 0.047, with only 13 regions) and the residual autocorrelation
+disappears. The 2002 slope stays at zero in every specification.
+
+**Turnout** does not account for the density association. In 2022, adding first-round turnout to the regression
+leaves the density slope almost unchanged (0.0094 to 0.0090). Corsica has by far the lowest turnout (about 60%) and a
+low HHI in 2022; without its two départements, lower turnout clearly goes with a more concentrated vote in 2022, and
+the density slope shrinks by about a quarter (0.0091 to 0.0072) but stays clearly significant. In 2002, once Corsica
+is set aside, HHI is related to neither turnout nor density.
+
+**Urban–rural categories.** Commune density divides the population by the whole surface, so a small town surrounded
+by forest looks as sparse as a scattered village. INSEE's density grid (*grille communale de densité 2025*) classifies
+communes instead by how concentrated their population is on 1 km² cells: dense urban, intermediate urban and rural,
+with rural communes split by whether they belong to a city's commuter area (periurban rural and non-periurban rural).
+The grid uses the 2022 population and is applied to both elections. For communes with at least 500 expressed votes:
+
+* **2022:** the 683 dense urban communes have an HHI 0.019 higher than non-periurban rural communes. Within
+  départements, this dense urban difference becomes small and not significant, but log density keeps a positive
+  coefficient, including within categories.
+* **2002:** the pattern is reversed: non-periurban rural communes are the most concentrated, about 0.006–0.009 above
+  every other category, within départements too.
+* At département level, the share of the population living in rural communes tells the same story as log density
+  (less concentrated where it is higher in 2022, no relationship in 2002), with a weaker fit.
+
+Details in `notebooks/analysis_departements.ipynb` and `notebooks/analysis_communes.ipynb`.
+
+</details>
+
+**Vote concentration is not, by itself, evidence of strategic voting.** A change in HHI can reflect candidate supply,
+preferences, campaigns or strategic voting, and these data do not separate them. The results describe associations:
+they do not show that density or urbanization causes coordination, and geographic concentration of the vote is not the
+same as individual strategic coordination.
 
 <p align="center">
   <img src="figures/figure_1_hhi_departements_2002_2022.png" width="49%" alt="HHI by département in 2002 and 2022">
@@ -254,40 +298,6 @@ Manche), Corsica (more than half of the communes in 2002, 35–42% in 2022), and
 Lozère, where the ratio rule removes many communes. The commune results therefore describe these areas less well, and
 Corsica hardly at all. `audit_communes.ipynb` re-estimates the relationship with a broader sample that only
 excludes communes with positive evidence of a mismatch, and the conclusions are the same.
-
-</details>
-
-<details>
-<summary><strong>Urban–rural classification</strong></summary>
-
-Commune density divides the population by the whole surface, so a small town surrounded by forest looks as sparse as
-a scattered village. INSEE's density grid (*grille communale de densité 2025*) classifies communes instead by how
-concentrated their population is on 1 km² cells: dense urban, intermediate urban and rural, with rural communes split
-by whether they belong to a city's commuter area (periurban rural and non-periurban rural). The grid uses the 2022
-population and is applied to both elections. Results for communes with at least 500 expressed votes:
-
-* **2022:** the 683 dense urban communes are clearly more concentrated than the rest (HHI 0.019 higher than
-  non-periurban rural communes), while intermediate urban, periurban rural and non-periurban rural communes hardly
-  differ from each other. The association is a big-city difference more than a gradual urban–rural gradient. Within
-  départements, the dense urban difference becomes small and not significant, but log density keeps a positive
-  coefficient, including within categories.
-* **2002:** the pattern is reversed: non-periurban rural communes are the most concentrated, about 0.006–0.009 above
-  every other category, within départements too.
-* At département level, the share of the population living in rural communes tells the same story as log density
-  (less concentrated where it is higher in 2022, no relationship in 2002), with a weaker fit.
-
-Details in `notebooks/analysis_communes.ipynb` and `notebooks/analysis_departements.ipynb`.
-
-</details>
-
-<details>
-<summary><strong>Turnout</strong></summary>
-
-Turnout does not account for the density association. In 2022, adding first-round turnout to the regression
-leaves the density slope almost unchanged (0.0094 to 0.0090). Corsica has by far the lowest turnout (about 60%) and a
-low HHI in 2022; without its two départements, lower turnout clearly goes with a more concentrated vote in 2022, and
-the density slope shrinks by about a quarter (0.0091 to 0.0072) but stays clearly significant. In 2002, once Corsica
-is set aside, HHI is related to neither turnout nor density. Details in `notebooks/analysis_departements.ipynb`.
 
 </details>
 
