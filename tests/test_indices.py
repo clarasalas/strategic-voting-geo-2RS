@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from svgeo.indices import (compute_cenp, compute_cliff_metrics, compute_enp, compute_hhi, compute_hhi_corrected,
-                           compute_indices)
+from svgeo.indices import compute_cenp, compute_enp, compute_hhi, compute_hhi_corrected, compute_indices
 
 
 def test_cenp_bounds():
@@ -39,13 +38,6 @@ def test_hhi_corrected_small_electorates():
     assert np.isnan(compute_hhi_corrected(np.array([0, 0, 0])))
     assert np.isnan(compute_hhi_corrected(np.array([1, 0, 0])))
     assert np.isclose(compute_hhi_corrected(np.array([2, 0])), 1)
-
-
-def test_cliff_between_second_and_third():
-    cliff = compute_cliff_metrics(np.array([0.40, 0.35, 0.15, 0.10]))  # gaps 0.05, 0.20, 0.05
-    assert cliff["cliff_location"] == 2
-    assert np.isclose(cliff["cliff_magnitude"], 0.20)
-    assert np.isclose(cliff["cliff_ratio"], 0.20 / (0.20 + 0.05))
 
 
 def test_compute_indices_fills_missing_candidates_and_skips_zero_votes():

@@ -6,9 +6,6 @@
 | HHI_corrected   | (n·HHI − 1) / (n − 1) = Σ n_j(n_j − 1) / (n(n − 1)), n = expressed votes; NaN if n ≤ 1   |
 | ENP             | 1 / HHI, the effective number of candidates                                              |
 | CENP            | (K − ENP) / (K − 1): 0 = uniform over the K candidates, 1 = all votes on one             |
-| cliff magnitude | d* = max_k g_k, g_k = δ_(k) − δ_(k+1), shares sorted in decreasing order                |
-| cliff location  | argmax_k g_k, 1-based: 2 = largest drop between the 2nd and 3rd candidates               |
-| cliff ratio     | d* / (d* + mean of the other gaps), in [0.5, 1]                                          |
 
 K = number of candidates nationally (16 in 2002, 12 in 2022); a candidate with no vote in a unit enters with δ = 0.
 
@@ -52,21 +49,6 @@ def compute_cenp(shares, K):
     return (K - compute_enp(shares)) / (K - 1)
 
 
-def compute_cliff_metrics(shares):
-    """Largest drop between consecutive ranked shares; if several gaps are equal the highest-ranked one is taken.
-
-    cliff_ratio is NaN if all gaps are 0.
-    """
-    ranked = np.sort(np.asarray(shares, dtype=float))[::-1]
-    gaps = ranked[:-1] - ranked[1:]
-    k = int(np.argmax(gaps))
-    d_star = gaps[k]
-    other_gaps = np.delete(gaps, k)
-    denom = d_star + (other_gaps.mean() if len(other_gaps) else 0.0)
-    return {"cliff_magnitude": d_star, "cliff_location": k + 1,
-            "cliff_ratio": d_star / denom if denom > 0 else np.nan}
-
-
 def compute_indices(results, unit, K_by_year):
     """One row per year × unit (`unit` = column with the département or commune code).
 
@@ -87,6 +69,5 @@ def compute_indices(results, unit, K_by_year):
             rows.append({"year": year, unit: code, "K": K,
                          "HHI": compute_hhi(s.values), "HHI_corrected": compute_hhi_corrected(votes.loc[code].values),
                          "ENP": compute_enp(s.values), "CENP": compute_cenp(s.values, K),
-                         **compute_cliff_metrics(s.values),
                          "winner": s.idxmax(), "winner_vote_share": s.max()})
     return pd.DataFrame(rows)

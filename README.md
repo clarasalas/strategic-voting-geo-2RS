@@ -51,8 +51,7 @@ The main measure is the Herfindahl–Hirschman index (HHI), the sum of the squar
 more concentrated first-round vote. HHI is used to compare 2002 and 2022 because it does not depend on the number of
 candidates on the ballot (16 in 2002, 12 in 2022). CENP, the effective number of candidates rescaled to [0, 1], is
 still reported as a supplementary measure, for continuity with the agent-based model and for the geography within each
-election. The cliff measures, which locate the largest drop in vote share between consecutive candidates, complement
-them. The analysis covers the 96 metropolitan départements, with a commune-level robustness analysis of about 34,000
+election. The analysis covers the 96 metropolitan départements, with a commune-level robustness analysis of about 34,000
 communes per election. All results are descriptive associations, not causal estimates, and a more concentrated vote is
 not by itself evidence of strategic voting.
 
@@ -145,7 +144,7 @@ svgeo/                       shared code (pip install -e .)
   results_page.py            parsing a results page (first-round candidates and turnout)
   departements.py            département scraper
   communes.py                commune scraper
-  indices.py                 HHI, corrected HHI, ENP, CENP, cliff measures
+  indices.py                 HHI, corrected HHI, ENP, CENP
   analysis.py                association statistics and plots
   spatial.py                 Moran's I, local clusters, Conley standard errors
 scripts/                     build the data, in order, then the interactive page

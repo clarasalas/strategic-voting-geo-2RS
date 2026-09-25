@@ -3,7 +3,7 @@
 The page is self-contained: Plotly.js, the département geometry and all values are embedded, so it opens from disk
 and needs no server. Everything shown is computed here from the processed data (nothing is hard-coded):
 HHI (vote concentration) by year and ΔHHI — the main cross-year layer —, CENP by year and ΔCENP (supplementary
-normalised measure), ranks, the descriptive 2022 regression HHI ~ log(density) and its residuals, cliff metrics and,
+normalised measure), ranks, the descriptive 2022 regression HHI ~ log(density) and its residuals and,
 if available, the candidates' first-round vote shares and the national HHI.
 
 Inputs
@@ -48,13 +48,9 @@ COORDINATE_DECIMALS = 4
 # more concentrated on the dark red side).
 N_COLOR_STOPS = 11
 CENP_PALETTE, DENSITY_PALETTE, DIVERGING_PALETTE = "rocket_r", "mako_r", "Spectral_r"
-CLIFF_CATEGORIES = ["1", "2", "3", "4", "5+"]
-# Cliff location: Spectral_r sampled cool (1) -> warm (5+), skipping the near-white middle of the scale
-CLIFF_SPECTRAL_POSITIONS = [0.0, 0.2, 0.65, 0.8, 1.0]
 DENSITY_TICKS = [5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000]
 
-INDICATOR_COLUMNS = ["year", "department_code", "department_name", "HHI", "CENP", "cliff_location", "cliff_magnitude",
-                     "cliff_ratio", "density", "log_density"]
+INDICATOR_COLUMNS = ["year", "department_code", "department_name", "HHI", "CENP", "density", "log_density"]
 CANDIDATE_COLUMNS = ["year", "dep_code", "candidate_clean", "votes"]
 
 
@@ -75,7 +71,7 @@ def require_file(path, what):
 
 # ======================= Data =======================
 def load_department_indicators():
-    """One row per metropolitan département: HHI, CENP, cliff metrics and density for each year (`<var>_<year>`)."""
+    """One row per metropolitan département: HHI, CENP and density for each year (`<var>_<year>`)."""
     require_file(DEPARTMENT_DENSITY, "Département indices/density file (run scripts/01–04)")
     long = read_csv(DEPARTMENT_DENSITY)
     require_columns(long, INDICATOR_COLUMNS, DEPARTMENT_DENSITY.name)
@@ -87,7 +83,7 @@ def load_department_indicators():
         if missing:
             warn(f"{year}: {len(missing)} metropolitan départements missing from the data: {missing}")
 
-    values = ["HHI", "CENP", "cliff_location", "cliff_magnitude", "cliff_ratio", "density", "log_density"]
+    values = ["HHI", "CENP", "density", "log_density"]
     dep = long.pivot(index="department_code", columns="year", values=values)
     dep.columns = [f"{var.lower()}_{year}" for var, year in dep.columns]
     names = long.sort_values("year").groupby("department_code")["department_name"].last()
@@ -95,7 +91,7 @@ def load_department_indicators():
 
 
 def add_derived_measures(dep):
-    """ΔHHI, ΔCENP, ranks (1 = most concentrated), 2022 descriptive regression HHI ~ log(density), cliff categories.
+    """ΔHHI, ΔCENP, ranks (1 = most concentrated), 2022 descriptive regression HHI ~ log(density).
 
     Within one election K is fixed and CENP is increasing in HHI, so the rank is the same with either measure.
     """
@@ -105,9 +101,6 @@ def add_derived_measures(dep):
     dep["delta_cenp"] = dep[f"cenp_{last}"] - dep[f"cenp_{first}"]
     for year in YEARS:
         dep[f"rank_{year}"] = dep[f"hhi_{year}"].rank(ascending=False, method="min").astype("Int64")
-        dep[f"cliff_group_{year}"] = pd.cut(dep[f"cliff_location_{year}"], bins=[0.5, 1.5, 2.5, 3.5, 4.5, np.inf],
-                                            labels=CLIFF_CATEGORIES).astype(object)
-        dep[f"cliff_location_{year}"] = dep[f"cliff_location_{year}"].astype("Int64")
 
     sample = dep.dropna(subset=[f"hhi_{last}", f"log_density_{last}"])
     fit = smf.ols(f"hhi_{last} ~ log_density_{last}", data=sample).fit()
@@ -241,24 +234,10 @@ def continuous_metric(key, label, field, palette, zmin, zmax, legend, short, val
             "ticks": ticks, "legend": legend, "short": short, "format": value_format, "ends": ends}
 
 
-def categorical_metric(key, label, field, legend, short, observed):
-    cmap = plt.get_cmap(DIVERGING_PALETTE)
-    colors = {cat: to_hex(cmap(pos)) for cat, pos in zip(CLIFF_CATEGORIES, CLIFF_SPECTRAL_POSITIONS)}
-    n = len(CLIFF_CATEGORIES)
-    scale = []
-    for i, cat in enumerate(CLIFF_CATEGORIES):  # one flat band per category; z = index + 0.5
-        scale += [[i / n, colors[cat]], [(i + 1) / n, colors[cat]]]
-    return {"key": key, "label": label, "field": field, "display_field": field, "kind": "categorical",
-            "categories": CLIFF_CATEGORIES, "legend_categories": [c for c in CLIFF_CATEGORIES if c in observed],
-            "colors": colors, "colorscale": scale, "zmin": 0, "zmax": n, "legend": legend, "short": short,
-            "format": "category"}
-
-
 def build_metrics(dep, regression):
     first, last = YEARS[0], YEARS[-1]
     hhi = pd.concat([dep[f"hhi_{y}"] for y in YEARS]).dropna()
     cenp = pd.concat([dep[f"cenp_{y}"] for y in YEARS]).dropna()
-    observed_cliff = set(pd.concat([dep[f"cliff_group_{y}"] for y in YEARS]).dropna())
 
     # Main cross-year layer first (it is the default map)
     delta_hhi = dep["delta_hhi"].dropna()
@@ -295,10 +274,6 @@ def build_metrics(dep, regression):
                                      f"Residual HHI {last}", "signed", diverging=True,
                                      ends=["Less concentrated than predicted by density",
                                            "More concentrated than predicted by density"]))
-    for y in YEARS:
-        metrics.append(categorical_metric(f"cliff_{y}", f"Cliff location — {y}", f"cliff_group_{y}",
-                                          f"Cliff location, {y} · rank after which the largest vote-share drop occurs",
-                                          f"Cliff location {y}", observed_cliff))
     return metrics
 
 
@@ -338,8 +313,7 @@ def main():
 
     columns = ["code", "name", "delta_hhi", "delta_cenp", f"fitted_{YEARS[-1]}", f"residual_{YEARS[-1]}"]
     for year in YEARS:
-        columns += [f"hhi_{year}", f"cenp_{year}", f"rank_{year}", f"density_{year}", f"log_density_{year}",
-                    f"cliff_location_{year}", f"cliff_group_{year}", f"cliff_magnitude_{year}", f"cliff_ratio_{year}"]
+        columns += [f"hhi_{year}", f"cenp_{year}", f"rank_{year}", f"density_{year}", f"log_density_{year}"]
     records = json.loads(dep[columns].sort_values("name").to_json(orient="records", double_precision=6))
 
     payload = {"years": YEARS, "departments": records, "candidates": candidates, "geojson": geojson,
@@ -361,7 +335,7 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
 <style>
   :root {
     --ink: #1a1a1a; --muted: #5f6368; --faint: #8a8f94; --rule: #e6e6e3; --soft: #f5f5f2;
-    --dark-bar: #3d3d3d; --light-bar: #cfcfca;
+    --bar: #3d3d3d;
     --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
   }
   * { box-sizing: border-box; }
@@ -391,9 +365,6 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
   .legend .ticks { position: relative; height: 18px; margin-top: 3px; }
   .legend .ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
   .legend .ends { display: flex; justify-content: space-between; gap: 12px; margin-top: 2px; }
-  .legend .swatches { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px 16px; }
-  .legend .swatch { display: inline-flex; align-items: center; gap: 6px; color: var(--ink); }
-  .legend .swatch i { width: 14px; height: 14px; border-radius: 2px; opacity: .9; display: inline-block; }
 
   aside { border-left: 1px solid var(--rule); padding-left: 30px; min-width: 0; }
   .finder { display: flex; flex-direction: column; gap: 6px; padding-bottom: 16px; border-bottom: 1px solid var(--rule); }
@@ -419,11 +390,6 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
   svg.dumbbell { width: 100%; height: auto; display: block; margin-top: 12px; }
   .caption { font-size: 12px; color: var(--faint); margin-top: 2px; }
 
-  table.mini { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
-  table.mini th, table.mini td { text-align: right; padding: 5px 0; border-bottom: 1px solid var(--rule); }
-  table.mini th:first-child, table.mini td:first-child { text-align: left; }
-  table.mini thead th { font-size: 12px; font-weight: 500; color: var(--muted); }
-  table.mini tbody tr:last-child td, table.mini tbody tr:last-child th { border-bottom: none; }
 
   .toggle { display: inline-flex; border: 1px solid var(--rule); border-radius: 999px; padding: 2px; margin-bottom: 10px; }
   .toggle button { font: inherit; font-size: 12px; border: none; background: none; padding: 4px 12px; border-radius: 999px;
@@ -434,11 +400,8 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
           font-size: 13px; }
   .vname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .vtrack { height: 10px; }
-  .vbar { display: block; height: 100%; background: var(--light-bar); border-radius: 1px; }
-  .vrow.above .vbar { background: var(--dark-bar); }
+  .vbar { display: block; height: 100%; background: var(--bar); border-radius: 1px; }
   .vpct { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
-  .vcliff { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); margin: 3px 0; }
-  .vcliff::before, .vcliff::after { content: ""; flex: 1; border-top: 1px dashed #9a9a95; }
 
   footer { margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--rule); font-size: 12px; color: var(--faint); }
   footer p { margin: 4px 0; max-width: 900px; }
@@ -530,17 +493,14 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
   const intFmt = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 0 });
   const densityFmt = v => isNum(v) ? (v >= 10 ? intFmt.format(v) : v.toFixed(1)) : "—";
   const pct = v => isNum(v) ? (100 * v).toFixed(1) + "%" : "—";
-  const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" }[n % 10] || "th"));
-  const cliffText = cat => cat == null ? "—" : cat === "5+" ? "after the 5th candidate or later" : "after the " + ordinal(Number(cat)) + " candidate";
 
   function formatMetric(m, d) {
     const v = d[m.display_field];
     if (m.format === "signed") return signed(v);
     if (m.format === "density") return isNum(v) ? densityFmt(v) + " inh./km²" : "—";
-    if (m.format === "category") return cliffText(v);
     return fixed(v);
   }
-  const hasValue = (m, d) => m.kind === "categorical" ? d[m.field] != null : isNum(d[m.field]);
+  const hasValue = (m, d) => isNum(d[m.field]);
 
   // ---------- map ----------
   const mapEl = document.getElementById("map");
@@ -577,7 +537,7 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
     }
     traces.push(Object.assign({}, BASE, {
       locations: shown.map(d => d.code),
-      z: shown.map(d => m.kind === "categorical" ? m.categories.indexOf(d[m.field]) + 0.5 : d[m.field]),
+      z: shown.map(d => d[m.field]),
       zmin: m.zmin, zmax: m.zmax, colorscale: m.colorscale,
       marker: { opacity: 0.9, line: { color: "#fff", width: 0.6 } },
       text: shown.map(d => hoverText(d, m)), hovertemplate: "%{text}<extra></extra>"
@@ -596,16 +556,11 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
   function renderLegend() {
     const m = METRIC[state.metric];
     let html = "<div class='legend-title'>" + esc(m.legend) + "</div>";
-    if (m.kind === "categorical") {
-      html += "<div class='swatches'>" + m.legend_categories.map(c =>
-        "<span class='swatch'><i style='background:" + m.colors[c] + "'></i>" + esc(c) + "</span>").join("") + "</div>";
-    } else {
-      const gradient = m.colorscale.map(([p, c]) => c + " " + (100 * p).toFixed(1) + "%").join(", ");
-      html += "<div class='bar' style='background:linear-gradient(to right, " + gradient + ")'></div><div class='ticks'>" +
-        m.ticks.map(t => "<span style='left:" + (100 * (t.value - m.zmin) / (m.zmax - m.zmin)).toFixed(2) + "%'>" +
-          esc(t.label) + "</span>").join("") + "</div>";
-      if (m.ends) html += "<div class='ends'><span>← " + esc(m.ends[0]) + "</span><span>" + esc(m.ends[1]) + " →</span></div>";
-    }
+    const gradient = m.colorscale.map(([p, c]) => c + " " + (100 * p).toFixed(1) + "%").join(", ");
+    html += "<div class='bar' style='background:linear-gradient(to right, " + gradient + ")'></div><div class='ticks'>" +
+      m.ticks.map(t => "<span style='left:" + (100 * (t.value - m.zmin) / (m.zmax - m.zmin)).toFixed(2) + "%'>" +
+        esc(t.label) + "</span>").join("") + "</div>";
+    if (m.ends) html += "<div class='ends'><span>← " + esc(m.ends[0]) + "</span><span>" + esc(m.ends[1]) + " →</span></div>";
     document.getElementById("legend").innerHTML = html;
   }
 
@@ -675,19 +630,14 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
     const toggle = "<div class='toggle' role='group' aria-label='Election year'>" + DATA.years.map(y =>
       "<button data-vote-year='" + y + "' aria-pressed='" + (String(y) === state.voteYear) + "'>" + y + "</button>").join("") + "</div>";
     if (!rows.length) return toggle + "<p class='small' style='margin:0'>No candidate results for this département.</p>";
-    const cliff = d["cliff_location_" + state.voteYear];
-    const magnitude = d["cliff_magnitude_" + state.voteYear];
     const max = Math.max(...rows.map(r => r.share));
     let html = toggle + "<div class='votes'>";
-    rows.forEach((r, i) => {
-      html += "<div class='vrow" + (isNum(cliff) && i < cliff ? " above" : "") + "'><span class='vname' title='" + esc(r.name) + "'>" +
+    rows.forEach(r => {
+      html += "<div class='vrow'><span class='vname' title='" + esc(r.name) + "'>" +
         esc(r.name) + "</span><span class='vtrack'><span class='vbar' style='width:" + (100 * r.share / max).toFixed(1) +
         "%'></span></span><span class='vpct'>" + pct(r.share) + "</span></div>";
-      if (isNum(cliff) && i + 1 === cliff && i < rows.length - 1) {
-        html += "<div class='vcliff'>largest drop" + (isNum(magnitude) ? ": " + (100 * magnitude).toFixed(1) + " pts" : "") + "</div>";
-      }
     });
-    return html + "</div><p class='small'>Share of valid first-round votes. Dark bars: candidates above the largest drop.</p>";
+    return html + "</div><p class='small'>Share of valid first-round votes.</p>";
   }
 
   function departmentHtml(d) {
@@ -695,9 +645,6 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
     const residual = d["residual_" + LAST];
     const verdict = !isNum(residual) ? "" : residual > 0 ? "More concentrated than predicted by density" : "Less concentrated than predicted by density";
     const rank = y => isNum(d["rank_" + y]) ? d["rank_" + y] + " of " + S.n_departments : "—";
-    const cliffRow = y => "<tr><th>" + y + "</th><td>" + (isNum(d["cliff_location_" + y]) ? d["cliff_location_" + y] : "—") +
-      "</td><td>" + (isNum(d["cliff_magnitude_" + y]) ? (100 * d["cliff_magnitude_" + y]).toFixed(1) + " pts" : "—") +
-      "</td><td>" + fixed(d["cliff_ratio_" + y], 2) + "</td></tr>";
     return "<div class='panel-head'><div><div class='eyebrow'>Département " + esc(d.code) + "</div><h2>" + esc(d.name) +
       "</h2></div><button class='clear' data-action='clear'>Clear selection</button></div>" +
 
@@ -722,11 +669,6 @@ PAGE_TEMPLATE = r"""<!DOCTYPE html>
       stat("Residual", signed(residual)) + "</div>" + (verdict ? "<div class='verdict'>" + verdict + "</div>" : "") +
       "<p class='small'>Prediction from a descriptive regression of HHI on log density across " + r.n +
       " départements (R² = " + r.r2.toFixed(2) + "). It describes an association, not a causal effect.</p></section>" +
-
-      "<section class='block'><h3>Cliff metrics</h3><table class='mini'><thead><tr><th></th><th>Location</th>" +
-      "<th>Magnitude</th><th>Ratio</th></tr></thead><tbody>" + DATA.years.map(cliffRow).join("") + "</tbody></table>" +
-      "<p class='small'>Location: rank after which the largest drop between consecutive candidates occurs. " +
-      "Magnitude: size of that drop. Ratio: how much it stands out from the other gaps (0.5–1).</p></section>" +
 
       "<section class='block'><h3>First-round vote shares</h3>" + voteChart(d) + "</section>";
   }

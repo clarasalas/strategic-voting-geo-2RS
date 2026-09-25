@@ -18,7 +18,7 @@ Each archive stores its files under their path in the repository (`data/raw/...`
 |---|---|
 | `insee_inputs.zip` | INSEE files used for population, surface and the urban–rural classification (`data/raw/insee/`) |
 | `raw_results.zip` | first-round results scraped from the Ministère de l'Intérieur archive, by département and by commune, with the département page URLs and the pages that could not be read (`data/raw/*.csv`) |
-| `processed.zip` | outputs of the pipeline: candidate results, concentration indices (HHI, corrected HHI, ENP, CENP, cliff measures), indices merged with population density, and the tables of the commune audit (`data/processed/`) |
+| `processed.zip` | outputs of the pipeline: candidate results, concentration indices (HHI, corrected HHI, ENP, CENP), indices merged with population density, and the tables of the commune audit (`data/processed/`) |
 | `html_pages.zip` | every scraped results page, as downloaded (`data/raw/html_cache*/`); lets the scraping scripts run again with `--offline` |
 | `SHA256SUMS` | SHA-256 checksums of the files above |
 

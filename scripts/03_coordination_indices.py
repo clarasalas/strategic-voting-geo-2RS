@@ -1,5 +1,4 @@
-"""Step 3 — concentration indices (HHI, corrected HHI, ENP, CENP, cliff magnitude / location / ratio) by département
-and by commune.
+"""Step 3 — concentration indices (HHI, corrected HHI, ENP, CENP) by département and by commune.
 
 Shares are recomputed from the counts, δ_j = votes_j / Σ_k votes_k, with K = number of candidates nationally
 (16 in 2002, 12 in 2022). Definitions: svgeo/indices.py. HHI and CENP describe the observed result only (there is no
@@ -20,9 +19,9 @@ from svgeo.config import (COMMUNE_INDICES, COMMUNE_RESULTS, DEPARTMENT_INDICES, 
 from svgeo.indices import compute_indices
 from svgeo.utils import read_csv, report, show
 
-INDEX_COLUMNS = ["HHI", "HHI_corrected", "ENP", "CENP", "cliff_magnitude", "cliff_location", "cliff_ratio"]
-# May be missing for a unit with votes: corrected HHI when n <= 1, cliff ratio when all gaps are 0
-OPTIONAL_INDEX_COLUMNS = ["HHI_corrected", "cliff_ratio"]
+INDEX_COLUMNS = ["HHI", "HHI_corrected", "ENP", "CENP"]
+# May be missing for a unit with votes: corrected HHI when n <= 1
+OPTIONAL_INDEX_COLUMNS = ["HHI_corrected"]
 
 
 def check_k(results):
@@ -51,10 +50,6 @@ def validate(indices, unit):
            (hc <= d.loc[~small, "HHI"] + 1e-12).all())
     report("CENP within [0, 1]", d["CENP"].between(0, 1).all(), d.loc[~d["CENP"].between(0, 1), ["year", unit, "CENP"]])
     report("ENP within [1, K]", (d["ENP"].ge(1 - 1e-12) & d["ENP"].le(d["K"] + 1e-12)).all())
-    # d* >= every other gap >= their mean, so the ratio is >= 0.5; it is 1 only if all other gaps are 0
-    r = d["cliff_ratio"].dropna()
-    report("cliff ratio within [0.5, 1]", r.between(0.5, 1).all(), d.loc[r.index[~r.between(0.5, 1)]])
-    report("cliff location within [1, K − 1]", d["cliff_location"].between(1, d["K"] - 1).all())
     print("Summary by year:")
     show(d.groupby("year")[INDEX_COLUMNS].agg(["min", "max", "mean"]).T)
 

@@ -70,7 +70,8 @@ def main():
     args = parser.parse_args()
 
     OUT_DIR.mkdir(exist_ok=True)
-    for name, files in archive_members().items():
+    archives = archive_members()
+    for name, files in archives.items():
         target = OUT_DIR / name
         if target.exists() and not args.force:
             print(f"{name} exists — skipped (use --force to rebuild)")
@@ -81,7 +82,8 @@ def main():
 
     (OUT_DIR / "README.md").write_text((ROOT / "docs" / "zenodo_README.md").read_text(encoding="utf-8"),
                                        encoding="utf-8")
-    sums = [f"{sha256(p)}  {p.name}" for p in sorted(OUT_DIR.iterdir()) if p.name != "SHA256SUMS"]
+    # Only the deposit's own files: anything else left in the folder (e.g. an editor's history file) is ignored
+    sums = [f"{sha256(OUT_DIR / name)}  {name}" for name in sorted(["README.md", *archives])]
     (OUT_DIR / "SHA256SUMS").write_text("\n".join(sums) + "\n", encoding="utf-8")
     print(f"Deposit files in {OUT_DIR}:")
     for line in sums:
