@@ -36,16 +36,12 @@ reach the runoff. The model asks how coordination arises; this project looks at 
 results. Both study the same two elections: 2002 is the textbook coordination failure, when the left split and its
 front-runner missed the runoff; 2022 is the contrasting case.
 
-**Why population density.** In the model, voters coordinate by reading a public poll: every voter sees the same poll,
-and voters do not talk to each other. Real polls are national too, the same in Paris and in Lozère. If coordination
-still varies from place to place, the difference cannot come from the polls themselves, but from how their
-information reaches voters and is acted on: whether people follow the polls, talk about them, and end up sharing the
-same view of who can reach the runoff. Denser places have more people and more interactions, so poll information
-should circulate more there and voters' expectations should line up more closely behind it. The hypothesis is that
-the first-round vote is more concentrated where population density is higher. Density stands in for these
-interactions: the data observe neither the interactions nor voters' exposure to polls directly. Density also goes with
-other differences between places (education, age, income), which could produce the same pattern, and the analysis
-does not control for them.
+**Why population density.** The model shows how expectations about which candidates can reach the runoff may affect 
+voters’ choices. We cannot observe those expectations in election results, but we can ask whether vote concentration 
+varies across places. Population density gives us a simple way to compare urban and rural areas in 2002 and 2022. 
+Differences may reflect voters’ preferences, candidate support, campaigns or strategic voting; this analysis cannot 
+separate them. The density comparison is therefore an exploration of the geography of vote concentration, not a test 
+of the model’s mechanism.
 
 The main measure is the Herfindahl–Hirschman index (HHI), the sum of the squared vote shares: higher values mean a
 more concentrated first-round vote. HHI is used to compare 2002 and 2022 because it does not depend on the number of
