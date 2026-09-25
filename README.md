@@ -298,5 +298,5 @@ is set aside, HHI is related to neither turnout nor density. Details in `noteboo
 
 ---
 
-Clara Salas. Master's thesis project, ENS-PSL / Centre Borelli. Complementary analysis to the agent-based model
+Clara Salas (ENS-PSL). Complementary analysis to the agent-based model
 [strategic-voting-abm-2RS](https://github.com/clarasalas/strategic-voting-abm-2RS).
