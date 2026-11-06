@@ -136,8 +136,8 @@ they do not show that density or urbanization causes coordination, and geographi
 same as individual strategic coordination.
 
 <p align="center">
-  <img src="figures/figure_1_hhi_departements_2002_2022.png" width="49%" alt="HHI by département in 2002 and 2022">
-  <img src="figures/figure_3_residual_hhi_2022.png" width="49%" alt="Residual HHI relative to the 2022 density relationship">
+  <img src="figures/figure_1_hhi_departements_2002_2022.png" width="54%" alt="HHI by département in 2002 and 2022">
+  <img src="figures/figure_3_residual_hhi_2022.png" width="44%" alt="Residual HHI relative to the 2022 density relationship">
 </p>
 
 <p align="center">
