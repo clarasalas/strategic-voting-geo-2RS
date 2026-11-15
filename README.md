@@ -163,11 +163,25 @@ pytest                                        # add -m "not slow" to skip the pi
 python scripts/build_department_explorer.py   # rebuilds the interactive page, docs/index.html
 ```
 
+The two scraping steps can be replaced by one that takes a few minutes: the Ministère de l'Intérieur also publishes
+the results of every polling station on data.gouv.fr, and summing the polling stations gives the same commune and
+département results as the archive pages.
+
+```bash
+python scripts/results_from_datagouv.py          # instead of 01 and 02: downloads two files (110 MB), about a minute
+python scripts/results_from_datagouv.py --check  # or: compare these files with scraped results already in data/
+```
+
+The results in this repository were produced by scraping. The official files were compared with them afterwards: the
+vote shares and HHI of the 96 départements and the national HHI of both elections are the same, and so are the
+commune counts (36,559 and 34,820 metropolitan communes) and the votes and turnout of the saved results pages.
+
 The results were produced with Python 3.11 and the exact package versions in `requirements-lock.txt`
 (`pip install -r requirements-lock.txt && pip install -e . --no-deps`). The tests check the index formulas, parse
-saved results pages from both elections, and, when `data/` is present, rebuild the processed files from the scraped
+saved results pages from both elections, check that excerpts of the official polling-station files add up to the same
+commune results, and, when `data/` is present, rebuild the processed files from the scraped
 results and compare them byte for byte. `notebooks/audit_communes.ipynb` also needs the scraped pages
-(`data/raw/html_cache*/`).
+(`data/raw/html_cache*/`) and the scraping failure files, which only scripts 01 and 02 produce.
 
 The static figures (figures 1–3 and supplementary figure S1) are produced by `notebooks/maps_departements.ipynb`, which
 writes them to `figures/`. The
@@ -184,12 +198,14 @@ svgeo/                       shared code (pip install -e .)
   results_page.py            parsing a results page (first-round candidates and turnout)
   departements.py            département scraper
   communes.py                commune scraper
+  datagouv.py                the same results from the official files by polling station (data.gouv.fr)
   indices.py                 HHI, corrected HHI, ENP, CENP
   analysis.py                association statistics and plots
   spatial.py                 Moran's I, local clusters, Conley standard errors
 scripts/                     build the data, in order, then the interactive page
   01_scrape_departements.py
   02_scrape_communes.py
+  results_from_datagouv.py   alternative to 01 and 02, without scraping
   03_coordination_indices.py
   04_density.py
   build_department_explorer.py   interactive map -> docs/index.html
@@ -202,7 +218,7 @@ notebooks/                   analysis (read the processed CSVs only)
   maps_departements.ipynb    static report maps -> figures/
 docs/                        GitHub Pages site (generated index.html, publishing notes) and the deposit README
 figures/                     static figures (PNG 300 dpi and PDF)
-tests/                       unit tests and end-to-end checks (fixtures: saved results pages)
+tests/                       unit tests and end-to-end checks (fixtures: saved results pages, file excerpts)
 ```
 
 </details>
@@ -214,6 +230,7 @@ tests/                       unit tests and end-to-end checks (fixtures: saved r
 |---|---|---|
 | `01_scrape_departements.py` | election archive | `raw/presidential_{year}_department_urls.csv`, `raw/presidential_{year}_departments.csv`, `processed/presidential_departments_2002_2022.csv` |
 | `02_scrape_communes.py` | département URLs, election archive | `raw/presidential_{year}_communes.csv`, `raw/presidential_{year}_communes_failures.csv`, `processed/presidential_communes_2002_2022.csv` |
+| `results_from_datagouv.py` (instead of 01 and 02) | official files by polling station, downloaded into `raw/datagouv/` | `processed/presidential_departments_2002_2022.csv`, `processed/presidential_communes_2002_2022.csv` |
 | `03_coordination_indices.py` | results | `processed/coordination_indices_{departements,communes}.csv` |
 | `04_density.py` | indices, INSEE files | `processed/coordination_density_departements.csv`, `processed/coordination_density_departements_wide.csv`, `processed/coordination_density_communes_corrected.csv` (and one file per year) |
 | `notebooks/audit_communes.ipynb` | commune results and density | `processed/audit_corrected/*.csv` (CENP and HHI / corrected HHI tables) |
@@ -232,6 +249,12 @@ of the data folder.
 
 * **Election results**, scraped from the Ministère de l'Intérieur archive,
   <https://www.archives-resultats-elections.interieur.gouv.fr/> (presidential elections 2002 and 2022, first round).
+  The same results by polling station are published by the Ministère de l'Intérieur on data.gouv.fr (Licence
+  Ouverte) and are read by `scripts/results_from_datagouv.py`:
+  * 2002, `PR02_BVot_T1T2.txt`,
+    <https://www.data.gouv.fr/datasets/election-presidentielle-2002-resultats-par-bureaux-de-vote/>;
+  * 2022, `resultats-par-niveau-burvot-t1-france-entiere.txt`,
+    <https://www.data.gouv.fr/datasets/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour/>.
 * **INSEE files** (Licence Ouverte), downloaded by hand into `data/raw/insee/`:
   * `1_Pop_annu_compo_evol_depreg.xlsx`, table DEP1 of *La situation démographique en 2025* (population on 1 January
     by département, one sheet per year), <https://www.insee.fr/fr/statistiques/8999023?sommaire=8999231>;

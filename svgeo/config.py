@@ -26,6 +26,21 @@ DEPARTMENT_FAILURES = RAW_DIR / "presidential_departments_failures.csv"  # writt
 COMMUNE_RAW = {y: RAW_DIR / f"presidential_{y}_communes.csv" for y in YEARS}
 COMMUNE_FAILURES = {y: RAW_DIR / f"presidential_{y}_communes_failures.csv" for y in YEARS}
 
+# ---- Official result files by polling station (data.gouv.fr, Ministère de l'Intérieur, Licence Ouverte) ----
+# An alternative to scraping: scripts/results_from_datagouv.py builds the same processed result files from them
+DATAGOUV_DIR = RAW_DIR / "datagouv"
+_DATAGOUV = "https://static.data.gouv.fr/resources/"
+DATAGOUV_FILES = {
+    2002: {"path": DATAGOUV_DIR / "PR02_BVot_T1T2.txt",
+           "url": _DATAGOUV + "election-presidentielle-2002-resultats-par-bureaux-de-vote/20150925-110503/"
+                              "PR02_BVot_T1T2.txt",
+           "sha256": "0c2d26ed5de8a2c16a8a0192a3356f27cbaa47fbf1c56795dd8ba8de77077e25"},
+    2022: {"path": DATAGOUV_DIR / "resultats-par-niveau-burvot-t1-france-entiere.txt",
+           "url": _DATAGOUV + "election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour/"
+                              "20220414-152542/resultats-par-niveau-burvot-t1-france-entiere.txt",
+           "sha256": "d878f33c4c1488188af0ca0eee9ff5a3116ea88c44979a1538ff43c663831624"},
+}
+
 # ---- INSEE inputs (downloaded by hand, see README) ----
 INSEE_POP_DEPARTEMENTS = INSEE_DIR / "1_Pop_annu_compo_evol_depreg.xlsx"
 INSEE_COMMUNES = INSEE_DIR / "base-cc-serie-historique-2022.CSV"
