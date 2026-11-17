@@ -260,7 +260,7 @@ of the data folder.
   * `1_Pop_annu_compo_evol_depreg.xlsx`, table DEP1 of *La situation démographique en 2025* (population on 1 January
     by département, one sheet per year), <https://www.insee.fr/fr/statistiques/8999023?sommaire=8999231>;
   * `base-cc-serie-historique-2022.CSV` and `meta_base-cc-serie-historique-2022.CSV`, from
-    `base-cc-serie-historique-2022-COM_csv.zip` on *Séries historiques en 2022* (commune populations `D99_POP`, `P06_POP`,
+    `base-cc-serie-historique-2022_csv.zip` on *Séries historiques en 2022* (commune populations `D99_POP`, `P06_POP`,
     `P22_POP` and surface `SUPERF`, geography of 1 January 2025), <https://www.insee.fr/fr/statistiques/8582555>;
   * `grille_densite_2025_geo2025.xlsx`, *La grille de densité 2025*, file for the 2025 geography
     (`fichier_diffusion_2025.xlsx` on <https://www.insee.fr/fr/information/8571524>, saved under this name).
