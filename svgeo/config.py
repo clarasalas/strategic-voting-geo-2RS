@@ -50,13 +50,14 @@ INSEE_DENSITY_GRID = INSEE_DIR / "grille_densite_2025_geo2025.xlsx"
 # One entry per download: its address, and the SHA-256 of each file it gives, as saved in data/raw/insee/.
 # INSEE replaces files with new vintages, so the checksums pin the exact versions used in the analysis.
 # The checksums are those of the files used for the published results (python scripts/download_data.py --checksums).
-# TODO: fill in each url, the file link on the INSEE page named in the comment.
+# TODO: fill in the url of the density grid, the file link on the INSEE page named in the comment.
+_INSEE = "https://www.insee.fr/fr/statistiques/fichier/"
 INSEE_DOWNLOADS = [
     # Table DEP1 of "La situation démographique en 2025", https://www.insee.fr/fr/statistiques/8999023?sommaire=8999231
-    {"url": None, "files": {
+    {"url": _INSEE + "8999023/1_Pop_annu_compo_evol_depreg.xlsx", "files": {
         INSEE_POP_DEPARTEMENTS: "12c65c698949c0ef08870a37b172c816b7b42ab3b5cb86978e6965ec3fe81f6c"}},
-    # base-cc-serie-historique-2022_csv.zip, "Séries historiques en 2022", https://www.insee.fr/fr/statistiques/8582555
-    {"url": None, "zip": True, "files": {
+    # base-cc-serie-historique-2022-COM_csv.zip, "Séries historiques en 2022", https://www.insee.fr/fr/statistiques/8582555
+    {"url": _INSEE + "8582555/base-cc-serie-historique-2022-COM_csv.zip", "zip": True, "files": {
         INSEE_COMMUNES: "ef4bcccf2ae6781bb9af371ce43a64058d0f2cac3e8951f65efc901117726340",
         INSEE_COMMUNES_META: "136f9c3ff696e25a82cb20730d6fe9662299c29a358fc30358899b4636c5d25f"}},
     # fichier_diffusion_2025.xlsx, "La grille de densité 2025", https://www.insee.fr/fr/information/8571524
