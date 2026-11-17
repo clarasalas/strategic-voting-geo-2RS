@@ -325,6 +325,15 @@ excludes communes with positive evidence of a mismatch, and the conclusions are 
 
 </details>
 
+## Licence
+
+Copyright © 2026 Clara Salas.
+
+The code is free software, licensed under the [GNU General Public License v3.0 or later](LICENSE): you may use,
+modify and redistribute it, and anything you distribute that is based on it must be released under the same
+licence. The data, results and figures (`figures/`) are licensed under
+[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/); see [`LICENSE-DATA.md`](LICENSE-DATA.md), which also lists the sources to credit.
+
 ---
 
 Clara Salas (ENS-PSL), supervised by Julien Randon-Furling and Cécile de Bézenac (Centre Borelli, ENS Paris-Saclay).

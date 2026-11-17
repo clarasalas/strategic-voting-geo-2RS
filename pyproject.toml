@@ -6,6 +6,8 @@ build-backend = "setuptools.build_meta"
 name = "svgeo"
 version = "0.1.0"
 description = "Geography of strategic voting: coordination and population density in the 2002 and 2022 French presidential first rounds"
+license = {text = "GPL-3.0-or-later"}
+classifiers = ["License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)"]
 requires-python = ">=3.10"
 # Core: scraping, indices, density and the analysis notebooks. Exact tested versions: requirements-lock.txt
 dependencies = [
