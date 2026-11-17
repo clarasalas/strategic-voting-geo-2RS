@@ -49,15 +49,19 @@ INSEE_COMMUNES_META = INSEE_DIR / "meta_base-cc-serie-historique-2022.CSV"
 INSEE_DENSITY_GRID = INSEE_DIR / "grille_densite_2025_geo2025.xlsx"
 # One entry per download: its address, and the SHA-256 of each file it gives, as saved in data/raw/insee/.
 # INSEE replaces files with new vintages, so the checksums pin the exact versions used in the analysis.
-# TODO: fill in each url (the file link on the INSEE page named in the comment) and each sha256
-# (python scripts/download_data.py --checksums, on the files used for the published results).
+# The checksums are those of the files used for the published results (python scripts/download_data.py --checksums).
+# TODO: fill in each url, the file link on the INSEE page named in the comment.
 INSEE_DOWNLOADS = [
     # Table DEP1 of "La situation démographique en 2025", https://www.insee.fr/fr/statistiques/8999023?sommaire=8999231
-    {"url": None, "files": {INSEE_POP_DEPARTEMENTS: None}},
+    {"url": None, "files": {
+        INSEE_POP_DEPARTEMENTS: "12c65c698949c0ef08870a37b172c816b7b42ab3b5cb86978e6965ec3fe81f6c"}},
     # base-cc-serie-historique-2022_csv.zip, "Séries historiques en 2022", https://www.insee.fr/fr/statistiques/8582555
-    {"url": None, "zip": True, "files": {INSEE_COMMUNES: None, INSEE_COMMUNES_META: None}},
+    {"url": None, "zip": True, "files": {
+        INSEE_COMMUNES: "ef4bcccf2ae6781bb9af371ce43a64058d0f2cac3e8951f65efc901117726340",
+        INSEE_COMMUNES_META: "136f9c3ff696e25a82cb20730d6fe9662299c29a358fc30358899b4636c5d25f"}},
     # fichier_diffusion_2025.xlsx, "La grille de densité 2025", https://www.insee.fr/fr/information/8571524
-    {"url": None, "files": {INSEE_DENSITY_GRID: None}},
+    {"url": None, "files": {
+        INSEE_DENSITY_GRID: "951ae15ad9055235f3ec1d8bd7c9a2281d35f98a98e01bc2bc513f70eb1b3452"}},
 ]
 # Département boundaries: Etalab, contours administratifs 2025 (ODbL), fetched by scripts/download_data.py
 DEPARTMENT_BOUNDARIES = RAW_DIR / "geography" / "departements-100m.geojson"
