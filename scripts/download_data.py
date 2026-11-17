@@ -49,7 +49,10 @@ def check(path, expected, url):
 
 
 def fetch(source, force):
-    """Download one source; a zip is opened in memory and only the listed members are written."""
+    """Download one source; a zip is opened in memory and only the listed members are written.
+
+    A member is looked up under its name in source["members"] if given, otherwise under the local file name.
+    """
     files = source["files"]
     if not force and all(path.exists() for path in files):
         for path, expected in files.items():
@@ -64,10 +67,11 @@ def fetch(source, force):
     if source.get("zip"):
         with zipfile.ZipFile(io.BytesIO(response.content)) as z:
             by_name = {name.rsplit("/", 1)[-1]: name for name in z.namelist()}
-            missing = [path.name for path in files if path.name not in by_name]
+            member = {path: source.get("members", {}).get(path, path.name) for path in files}
+            missing = [name for name in member.values() if name not in by_name]
             if missing:
                 raise SystemExit(f"{source['url']}: {', '.join(missing)} not in the archive ({sorted(by_name)})")
-            contents = {path: z.read(by_name[path.name]) for path in files}
+            contents = {path: z.read(by_name[name]) for path, name in member.items()}
     else:
         (path,) = files
         contents = {path: response.content}

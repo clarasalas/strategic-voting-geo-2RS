@@ -58,7 +58,10 @@ INSEE_DOWNLOADS = [
     # base-cc-serie-historique-2022-COM_csv.zip, "Séries historiques en 2022", https://www.insee.fr/fr/statistiques/8582555
     {"url": _INSEE + "8582555/base-cc-serie-historique-2022-COM_csv.zip", "zip": True, "files": {
         INSEE_COMMUNES: "ef4bcccf2ae6781bb9af371ce43a64058d0f2cac3e8951f65efc901117726340",
-        INSEE_COMMUNES_META: "136f9c3ff696e25a82cb20730d6fe9662299c29a358fc30358899b4636c5d25f"}},
+        INSEE_COMMUNES_META: "136f9c3ff696e25a82cb20730d6fe9662299c29a358fc30358899b4636c5d25f"},
+     # names inside the archive, saved under the shorter names above
+     "members": {INSEE_COMMUNES: "base-cc-serie-historique-2022-COM.CSV",
+                 INSEE_COMMUNES_META: "meta_base-cc-serie-historique-2022-COM.CSV"}},
     # fichier_diffusion_2025.xlsx, "La grille de densité 2025", https://www.insee.fr/fr/information/8571524
     {"url": _INSEE + "8571524/fichier_diffusion_2025.xlsx", "files": {
         INSEE_DENSITY_GRID: "951ae15ad9055235f3ec1d8bd7c9a2281d35f98a98e01bc2bc513f70eb1b3452"}},
