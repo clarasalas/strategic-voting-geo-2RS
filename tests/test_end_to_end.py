@@ -56,7 +56,7 @@ PIPELINE_OUTPUTS = [DEPARTMENT_INDICES, COMMUNE_INDICES, DEPARTMENT_DENSITY, DEP
 
 @pytest.mark.slow
 @pytest.mark.skipif(not all(p.exists() for p in [*PIPELINE_INPUTS, *PIPELINE_OUTPUTS]) or not INSEE_DIR.exists(),
-                    reason="needs the data folder (scripts 01–04 or scripts/download_data.py)")
+                    reason="needs the data folder (scripts 01–04, see README)")
 def test_pipeline_rebuilds_the_processed_files(tmp_path):
     data = tmp_path / "data"
     (data / "processed").mkdir(parents=True)

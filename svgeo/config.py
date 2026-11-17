@@ -41,20 +41,29 @@ DATAGOUV_FILES = {
            "sha256": "d878f33c4c1488188af0ca0eee9ff5a3116ea88c44979a1538ff43c663831624"},
 }
 
-# ---- INSEE inputs (downloaded by hand, see README) ----
+# ---- INSEE inputs (Licence Ouverte), fetched and checked by scripts/download_data.py ----
 INSEE_POP_DEPARTEMENTS = INSEE_DIR / "1_Pop_annu_compo_evol_depreg.xlsx"
 INSEE_COMMUNES = INSEE_DIR / "base-cc-serie-historique-2022.CSV"
 INSEE_COMMUNES_META = INSEE_DIR / "meta_base-cc-serie-historique-2022.CSV"
 # Grille de densité 2025 (geography 1 January 2025, the same as the commune file), saved under this name
 INSEE_DENSITY_GRID = INSEE_DIR / "grille_densite_2025_geo2025.xlsx"
+# One entry per download: its address, and the SHA-256 of each file it gives, as saved in data/raw/insee/.
+# INSEE replaces files with new vintages, so the checksums pin the exact versions used in the analysis.
+# TODO: fill in each url (the file link on the INSEE page named in the comment) and each sha256
+# (python scripts/download_data.py --checksums, on the files used for the published results).
+INSEE_DOWNLOADS = [
+    # Table DEP1 of "La situation démographique en 2025", https://www.insee.fr/fr/statistiques/8999023?sommaire=8999231
+    {"url": None, "files": {INSEE_POP_DEPARTEMENTS: None}},
+    # base-cc-serie-historique-2022_csv.zip, "Séries historiques en 2022", https://www.insee.fr/fr/statistiques/8582555
+    {"url": None, "zip": True, "files": {INSEE_COMMUNES: None, INSEE_COMMUNES_META: None}},
+    # fichier_diffusion_2025.xlsx, "La grille de densité 2025", https://www.insee.fr/fr/information/8571524
+    {"url": None, "files": {INSEE_DENSITY_GRID: None}},
+]
 # Département boundaries: Etalab, contours administratifs 2025 (ODbL), fetched by scripts/download_data.py
 DEPARTMENT_BOUNDARIES = RAW_DIR / "geography" / "departements-100m.geojson"
 DEPARTMENT_BOUNDARIES_URL = ("https://etalab-datasets.geo.data.gouv.fr/contours-administratifs/2025/geojson/"
                              "departements-100m.geojson")
 DEPARTMENT_BOUNDARIES_SHA256 = "10f5c6ffc2dc857b4f4fc360297f97f6f01fc3ba3eb3a326ee92b76baefed447"
-
-# Zenodo data deposit (scripts/package_zenodo.py builds it, scripts/download_data.py fetches it)
-ZENODO_RECORD = None  # record id, e.g. "12345678", once the deposit is published
 
 # ---- Processed files ----
 DEPARTMENT_RESULTS = PROCESSED_DIR / "presidential_departments_2002_2022.csv"
