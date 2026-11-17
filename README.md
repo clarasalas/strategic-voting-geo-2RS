@@ -326,6 +326,6 @@ excludes communes with positive evidence of a mismatch, and the conclusions are 
 
 ---
 
-Clara Salas (ENS-PSL). Part of a project that started as a master's thesis at Centre Borelli, supervised by
-Julien Randon-Furling, with advice from Cécile de Bezenac, and continues under their supervision. Complementary analysis to the agent-based model
-[strategic-voting-abm-2RS](https://github.com/clarasalas/strategic-voting-abm-2RS).
+Clara Salas (ENS-PSL), supervised by Julien Randon-Furling and Cécile de Bézenac (Centre Borelli, ENS Paris-Saclay).
+Complementary analysis to the agent-based model [strategic-voting-abm-2RS](https://github.com/clarasalas/strategic-voting-abm-2RS), which started as a master's
+thesis.
