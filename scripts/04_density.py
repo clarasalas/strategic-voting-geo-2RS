@@ -1,6 +1,6 @@
 """Step 4 — population density (INSEE) merged with the coordination indices, by département and by commune.
 
-INSEE inputs (data/raw/insee/, downloaded by hand — see README)
+INSEE inputs (data/raw/insee/, fetched by scripts/download_data.py — see README)
   1_Pop_annu_compo_evol_depreg.xlsx     population on 1 January of each year, by département
   base-cc-serie-historique-2022.CSV     commune populations (D99_POP, P06_POP, P22_POP) and surface SUPERF (km²)
   grille_densite_2025_geo2025.xlsx      grille communale de densité 2025 (communes and départements)

@@ -41,20 +41,33 @@ DATAGOUV_FILES = {
            "sha256": "d878f33c4c1488188af0ca0eee9ff5a3116ea88c44979a1538ff43c663831624"},
 }
 
-# ---- INSEE inputs (downloaded by hand, see README) ----
+# ---- INSEE inputs (Licence Ouverte), fetched and checked by scripts/download_data.py ----
 INSEE_POP_DEPARTEMENTS = INSEE_DIR / "1_Pop_annu_compo_evol_depreg.xlsx"
 INSEE_COMMUNES = INSEE_DIR / "base-cc-serie-historique-2022.CSV"
 INSEE_COMMUNES_META = INSEE_DIR / "meta_base-cc-serie-historique-2022.CSV"
 # Grille de densité 2025 (geography 1 January 2025, the same as the commune file), saved under this name
 INSEE_DENSITY_GRID = INSEE_DIR / "grille_densite_2025_geo2025.xlsx"
+# One entry per download: its address, and the SHA-256 of each file it gives, as saved in data/raw/insee/.
+# INSEE replaces files with new vintages, so the checksums pin the exact versions used in the analysis.
+# The checksums are those of the files used for the published results (python scripts/download_data.py --checksums).
+_INSEE = "https://www.insee.fr/fr/statistiques/fichier/"
+INSEE_DOWNLOADS = [
+    # Table DEP1 of "La situation démographique en 2025", https://www.insee.fr/fr/statistiques/8999023?sommaire=8999231
+    {"url": _INSEE + "8999023/1_Pop_annu_compo_evol_depreg.xlsx", "files": {
+        INSEE_POP_DEPARTEMENTS: "12c65c698949c0ef08870a37b172c816b7b42ab3b5cb86978e6965ec3fe81f6c"}},
+    # base-cc-serie-historique-2022_csv.zip (metropolitan France and overseas départements), "Séries historiques en 2022", https://www.insee.fr/fr/statistiques/8582555
+    {"url": _INSEE + "8582555/base-cc-serie-historique-2022_csv.zip", "zip": True, "files": {
+        INSEE_COMMUNES: "ef4bcccf2ae6781bb9af371ce43a64058d0f2cac3e8951f65efc901117726340",
+        INSEE_COMMUNES_META: "136f9c3ff696e25a82cb20730d6fe9662299c29a358fc30358899b4636c5d25f"}},
+    # fichier_diffusion_2025.xlsx, "La grille de densité 2025", https://www.insee.fr/fr/information/8571524
+    {"url": _INSEE + "8571524/fichier_diffusion_2025.xlsx", "files": {
+        INSEE_DENSITY_GRID: "951ae15ad9055235f3ec1d8bd7c9a2281d35f98a98e01bc2bc513f70eb1b3452"}},
+]
 # Département boundaries: Etalab, contours administratifs 2025 (ODbL), fetched by scripts/download_data.py
 DEPARTMENT_BOUNDARIES = RAW_DIR / "geography" / "departements-100m.geojson"
 DEPARTMENT_BOUNDARIES_URL = ("https://etalab-datasets.geo.data.gouv.fr/contours-administratifs/2025/geojson/"
                              "departements-100m.geojson")
 DEPARTMENT_BOUNDARIES_SHA256 = "10f5c6ffc2dc857b4f4fc360297f97f6f01fc3ba3eb3a326ee92b76baefed447"
-
-# Zenodo data deposit (scripts/package_zenodo.py builds it, scripts/download_data.py fetches it)
-ZENODO_RECORD = None  # record id, e.g. "12345678", once the deposit is published
 
 # ---- Processed files ----
 DEPARTMENT_RESULTS = PROCESSED_DIR / "presidential_departments_2002_2022.csv"

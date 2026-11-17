@@ -158,6 +158,7 @@ pip install -r requirements.txt               # the svgeo package with every opt
 python scripts/01_scrape_departements.py
 python scripts/02_scrape_communes.py          # several hours per year without the HTML cache
 python scripts/03_coordination_indices.py
+python scripts/download_data.py       # INSEE files and boundaries, checked against their checksums
 python scripts/04_density.py
 pytest                                        # add -m "not slow" to skip the pipeline rebuild
 python scripts/build_department_explorer.py   # rebuilds the interactive page, docs/index.html
@@ -209,14 +210,13 @@ scripts/                     build the data, in order, then the interactive page
   03_coordination_indices.py
   04_density.py
   build_department_explorer.py   interactive map -> docs/index.html
-  package_zenodo.py          builds the Zenodo data deposit -> data/zenodo/
-  download_data.py           downloads the deposit and the boundaries into data/
+  download_data.py           downloads the INSEE files and the boundaries into data/, checking their checksums
 notebooks/                   analysis (read the processed CSVs only)
   analysis_departements.ipynb
   analysis_communes.ipynb
   audit_communes.ipynb       robustness audit of the commune result
   maps_departements.ipynb    static report maps -> figures/
-docs/                        GitHub Pages site (generated index.html, publishing notes) and the deposit README
+docs/                        GitHub Pages site (generated index.html, publishing notes)
 figures/                     static figures (PNG 300 dpi and PDF)
 tests/                       unit tests and end-to-end checks (fixtures: saved results pages, file excerpts)
 ```
@@ -255,7 +255,8 @@ of the data folder.
     <https://www.data.gouv.fr/datasets/election-presidentielle-2002-resultats-par-bureaux-de-vote/>;
   * 2022, `resultats-par-niveau-burvot-t1-france-entiere.txt`,
     <https://www.data.gouv.fr/datasets/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour/>.
-* **INSEE files** (Licence Ouverte), downloaded by hand into `data/raw/insee/`:
+* **INSEE files** (Licence Ouverte), downloaded into `data/raw/insee/` by `scripts/download_data.py`, which checks
+  that each one is the version used here:
   * `1_Pop_annu_compo_evol_depreg.xlsx`, table DEP1 of *La situation démographique en 2025* (population on 1 January
     by département, one sheet per year), <https://www.insee.fr/fr/statistiques/8999023?sommaire=8999231>;
   * `base-cc-serie-historique-2022.CSV` and `meta_base-cc-serie-historique-2022.CSV`, from
@@ -263,8 +264,8 @@ of the data folder.
     `P22_POP` and surface `SUPERF`, geography of 1 January 2025), <https://www.insee.fr/fr/statistiques/8582555>;
   * `grille_densite_2025_geo2025.xlsx`, *La grille de densité 2025*, file for the 2025 geography
     (`fichier_diffusion_2025.xlsx` on <https://www.insee.fr/fr/information/8571524>, saved under this name).
-* **Département boundaries** for the maps, Etalab *contours administratifs* 2025 (ODbL), saved as
-  `data/raw/geography/departements-100m.geojson`:
+* **Département boundaries** for the maps, Etalab *contours administratifs* 2025 (ODbL), downloaded by
+  `scripts/download_data.py` as `data/raw/geography/departements-100m.geojson`:
   <https://etalab-datasets.geo.data.gouv.fr/contours-administratifs/2025/geojson/departements-100m.geojson>.
 
 </details>
@@ -326,5 +327,6 @@ excludes communes with positive evidence of a mismatch, and the conclusions are 
 
 ---
 
-Clara Salas (ENS-PSL). Complementary analysis to the agent-based model
-[strategic-voting-abm-2RS](https://github.com/clarasalas/strategic-voting-abm-2RS).
+Clara Salas (ENS-PSL), supervised by Julien Randon-Furling and Cécile de Bézenac (Centre Borelli, ENS Paris-Saclay).
+Complementary analysis to the agent-based model [strategic-voting-abm-2RS](https://github.com/clarasalas/strategic-voting-abm-2RS), which started as a master's
+thesis.

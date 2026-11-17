@@ -1,116 +1,106 @@
-"""Download the data from the Zenodo deposit and the département boundaries from Etalab, into data/.
+"""Download the INSEE files and the département boundaries into data/, from their official sources.
 
-Instead of scraping (scripts 01–02, several hours) and downloading the INSEE files by hand, this fetches the frozen
-copy of every input and output used in the analysis:
+  INSEE population estimates by département    -> data/raw/insee/1_Pop_annu_compo_evol_depreg.xlsx
+  INSEE census series by commune (zip)          -> data/raw/insee/base-cc-serie-historique-2022.CSV
+                                                   data/raw/insee/meta_base-cc-serie-historique-2022.CSV
+  INSEE density grid 2025                       -> data/raw/insee/grille_densite_2025_geo2025.xlsx
+  département boundaries (Etalab, ODbL)         -> data/raw/geography/departements-100m.geojson
 
-  insee_inputs.zip   INSEE files                       -> data/raw/insee/
-  raw_results.zip    scraped election results          -> data/raw/
-  processed.zip      indices, density, audit tables    -> data/processed/
-  html_pages.zip     scraped results pages (optional)  -> data/raw/html_cache*/   (--with-html-pages, ≈600 MB)
-  département boundaries (Etalab, ODbL)                -> data/raw/geography/departements-100m.geojson
+Every file is checked against the SHA-256 recorded in svgeo/config.py, so a file that INSEE has since replaced with a
+new version (a different commune geography, revised estimates) is refused instead of silently changing the results.
+The election results come from scripts 01–02 (scraping) or scripts/results_from_datagouv.py (official files), which
+check their own downloads.
 
-Every download is checked against its checksum. Existing files are kept unless --force is given.
-Set SVGEO_DATA_DIR to extract into another data folder.
+Existing files are kept, but still checked, unless --force is given. Set SVGEO_DATA_DIR to use another data folder.
 
-Usage: python scripts/download_data.py [--with-html-pages] [--force] [--from-dir DIR]
-       --from-dir DIR   use deposit files already in DIR (e.g. data/zenodo) instead of downloading them
+Usage: python scripts/download_data.py [--force]
+       python scripts/download_data.py --checksums   # print the SHA-256 of the files already in data/
 """
 import argparse
 import hashlib
-import tempfile
+import io
 import zipfile
-from pathlib import Path, PurePosixPath
 
 import requests
 
-from svgeo.config import (DATA_DIR, DEPARTMENT_BOUNDARIES, DEPARTMENT_BOUNDARIES_SHA256, DEPARTMENT_BOUNDARIES_URL,
-                          ZENODO_RECORD)
+from svgeo.config import (DEPARTMENT_BOUNDARIES, DEPARTMENT_BOUNDARIES_SHA256, DEPARTMENT_BOUNDARIES_URL,
+                          INSEE_DOWNLOADS)
 
-ARCHIVES = ["insee_inputs.zip", "raw_results.zip", "processed.zip"]
-HTML_ARCHIVE = "html_pages.zip"
+SOURCES = [*INSEE_DOWNLOADS,
+           {"url": DEPARTMENT_BOUNDARIES_URL,
+            "files": {DEPARTMENT_BOUNDARIES: DEPARTMENT_BOUNDARIES_SHA256}}]
 
 
-def file_digest(path, algorithm):
-    digest = hashlib.new(algorithm)
+def sha256(path):
+    digest = hashlib.sha256()
     with open(path, "rb") as f:
         for block in iter(lambda: f.read(1 << 20), b""):
             digest.update(block)
     return digest.hexdigest()
 
 
-def download(url, target, algorithm, expected):
-    """Stream `url` to `target` and check its checksum; the file is removed if the checksum differs."""
-    with requests.get(url, stream=True, timeout=60) as response:
-        response.raise_for_status()
-        with open(target, "wb") as f:
-            for block in response.iter_content(1 << 20):
-                f.write(block)
-    actual = file_digest(target, algorithm)
+def check(path, expected, url):
+    if expected is None:
+        raise SystemExit(f"{path.name}: no SHA-256 recorded in svgeo/config.py yet (got {sha256(path)})")
+    actual = sha256(path)
     if actual != expected:
-        target.unlink()
-        raise ValueError(f"{url}: {algorithm} {actual} differs from the expected {expected}")
+        raise SystemExit(f"{path}: SHA-256 {actual} differs from the recorded {expected}.\n"
+                         f"The source may have been replaced by a new version: {url}")
 
 
-def zenodo_files():
-    """{file name: (download url, md5)} of the published record."""
-    if ZENODO_RECORD is None:
-        raise SystemExit("ZENODO_RECORD is not set in svgeo/config.py yet: use --from-dir with local deposit files, "
-                         "or rebuild the data with scripts 01–04 (see README).")
-    record = requests.get(f"https://zenodo.org/api/records/{ZENODO_RECORD}", timeout=60)
-    record.raise_for_status()
-    return {f["key"]: (f["links"]["self"], f["checksum"].removeprefix("md5:")) for f in record.json()["files"]}
+def fetch(source, force):
+    """Download one source; a zip is opened in memory and only the listed members are written.
 
-
-def extract(archive, force):
-    """Extract an archive whose members are stored as data/...; members may not leave the data folder."""
-    written = skipped = 0
-    with zipfile.ZipFile(archive) as z:
-        for member in z.infolist():
-            if member.is_dir():
-                continue
-            parts = PurePosixPath(member.filename).parts
-            if parts[0] != "data" or ".." in parts:
-                raise ValueError(f"{archive.name}: unexpected member {member.filename}")
-            target = DATA_DIR.joinpath(*parts[1:])
-            if target.exists() and not force:
-                skipped += 1
-                continue
-            target.parent.mkdir(parents=True, exist_ok=True)
-            with z.open(member) as src, open(target, "wb") as dst:
-                while block := src.read(1 << 20):
-                    dst.write(block)
-            written += 1
-    print(f"{archive.name}: {written} files written, {skipped} already present (kept)")
+    A member is looked up under its name in source["members"] if given, otherwise under the local file name.
+    """
+    files = source["files"]
+    if not force and all(path.exists() for path in files):
+        for path, expected in files.items():
+            check(path, expected, source["url"])
+            print(f"{path.name}: present, checksum OK")
+        return
+    if source["url"] is None:
+        raise SystemExit(f"{', '.join(p.name for p in files)}: no download address recorded in svgeo/config.py yet")
+    print(f"Downloading {source['url']} ...", flush=True)
+    response = requests.get(source["url"], timeout=120)
+    response.raise_for_status()
+    if source.get("zip"):
+        with zipfile.ZipFile(io.BytesIO(response.content)) as z:
+            by_name = {name.rsplit("/", 1)[-1]: name for name in z.namelist()}
+            member = {path: source.get("members", {}).get(path, path.name) for path in files}
+            missing = [name for name in member.values() if name not in by_name]
+            if missing:
+                raise SystemExit(f"{source['url']}: {', '.join(missing)} not in the archive ({sorted(by_name)})")
+            contents = {path: z.read(by_name[name]) for path, name in member.items()}
+    else:
+        (path,) = files
+        contents = {path: response.content}
+    for path, data in contents.items():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        partial = path.with_name(path.name + ".part")
+        partial.write_bytes(data)
+        try:
+            check(partial, files[path], source["url"])
+        except SystemExit:
+            partial.unlink()
+            raise
+        partial.replace(path)
+        print(f"{path.name}: downloaded, checksum OK")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--with-html-pages", action="store_true", help="also fetch the scraped pages (≈600 MB)")
-    parser.add_argument("--force", action="store_true", help="overwrite files that already exist")
-    parser.add_argument("--from-dir", type=Path, help="folder with the deposit files, instead of downloading")
+    parser.add_argument("--force", action="store_true", help="download again files that already exist")
+    parser.add_argument("--checksums", action="store_true", help="print the SHA-256 of the local files and stop")
     args = parser.parse_args()
 
-    wanted = ARCHIVES + ([HTML_ARCHIVE] if args.with_html_pages else [])
-    with tempfile.TemporaryDirectory() as tmp:
-        if args.from_dir:
-            paths = {name: args.from_dir / name for name in wanted}
-        else:
-            available = zenodo_files()
-            paths = {}
-            for name in wanted:
-                url, md5 = available[name]
-                print(f"Downloading {name} ...", flush=True)
-                paths[name] = Path(tmp) / name
-                download(url, paths[name], "md5", md5)
-        for name in wanted:
-            extract(paths[name], args.force)
-
-    if DEPARTMENT_BOUNDARIES.exists() and not args.force:
-        print(f"{DEPARTMENT_BOUNDARIES.name} exists — kept")
-    else:
-        DEPARTMENT_BOUNDARIES.parent.mkdir(parents=True, exist_ok=True)
-        download(DEPARTMENT_BOUNDARIES_URL, DEPARTMENT_BOUNDARIES, "sha256", DEPARTMENT_BOUNDARIES_SHA256)
-        print(f"{DEPARTMENT_BOUNDARIES.name}: downloaded from Etalab")
+    if args.checksums:
+        for source in SOURCES:
+            for path in source["files"]:
+                print(f"{sha256(path) if path.exists() else 'missing':64}  {path.name}")
+        return
+    for source in SOURCES:
+        fetch(source, args.force)
 
 
 if __name__ == "__main__":

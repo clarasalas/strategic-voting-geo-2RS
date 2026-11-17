@@ -9,7 +9,7 @@ if available, the candidates' first-round vote shares and the national HHI.
 Inputs
   data/processed/coordination_density_departements.csv   indices + density, one row per year × département (step 4)
   data/processed/presidential_departments_2002_2022.csv  candidate votes by département (step 1) — optional
-  data/raw/geography/departements-100m.geojson           département boundaries (downloaded by hand)
+  data/raw/geography/departements-100m.geojson           département boundaries (scripts/download_data.py)
 Output
   docs/index.html
 
