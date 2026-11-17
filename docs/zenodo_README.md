@@ -2,6 +2,7 @@
 
 Data for the project *Geography of electoral coordination in France*
 (<https://github.com/clarasalas/strategic-voting-geo-2RS>), by Clara Salas (ENS-PSL).
+The project started as a master's thesis at Centre Borelli, supervised by Julien Randon-Furling, with advice from Cécile de Bezenac.
 The project measures how concentrated the first-round vote was in each metropolitan département and
 commune in the 2002 and 2022 French presidential elections, and how that concentration relates to population density.
 It is a complementary analysis to the agent-based model
